@@ -8,8 +8,8 @@ from within maya:
     * less context switching between the browser and maya
 
 Usage:
-    import maya_zync_submit
-    maya_zync_submit.submit_dialog()
+    import zync_maya
+    zync_maya.submit_dialog()
 
 """
 
