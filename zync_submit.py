@@ -24,7 +24,7 @@ import time
 __author__ = 'Alex Schworer'
 __copyright__ = 'Copyright 2011, Atomic Fiction, Inc.'
 
-# REPLACE WITH PATH TO zync/ DIRECTORY
+# REPLACE WITH PATH TO zync-python DIRECTORY
 if platform.system() in ( "Windows", "Microsoft" ):
     API_DIR = "Z:/plugins/zync-python"
 else:
