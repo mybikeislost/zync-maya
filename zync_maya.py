@@ -334,10 +334,13 @@ class SubmitWindow(object):
 
     def init_layers(self):
         self.layers = []
-        all_layers = cmds.ls(type='renderLayer',showNamespace=True)
-        for i in range( 0, len(all_layers), 2 ):
-            if all_layers[i+1] == ':':
-                self.layers.append( all_layers[i] )
+        try:
+            all_layers = cmds.ls(type='renderLayer',showNamespace=True)
+            for i in range( 0, len(all_layers), 2 ):
+                if all_layers[i+1] == ':':
+                    self.layers.append( all_layers[i] )
+        except Exception:
+            self.layers = cmds.ls(type='renderLayer')
 
     def get_scene_info(self, renderer):
         """
