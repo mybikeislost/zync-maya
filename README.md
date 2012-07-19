@@ -1,5 +1,7 @@
 # ZYNC Plugin for Autodesk's Maya
 
+Tested with Maya 2012 and 2013.
+
 ## Installing
 
 Everything you need is included in this repository. You'll just need to point Maya to this folder to load it on startup.
