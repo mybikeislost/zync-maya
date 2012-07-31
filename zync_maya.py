@@ -206,6 +206,7 @@ class SubmitWindow(object):
             cmds.error( project_response["response"] )
         self.project_name = project_response["response"]
         self.num_instances = 1
+        self.priority = 50
 
         self.project = proj_dir()
         if self.project[-1] == "/":
@@ -220,6 +221,8 @@ class SubmitWindow(object):
         self.frame_step = cmds.getAttr('defaultRenderGlobals.byFrameStep')
         self.chunk_size = 10
         self.upload_only = 0
+        self.skip_check = 0
+        self.notify_complete = 0
 
         self.init_layers()
 
@@ -268,6 +271,8 @@ class SubmitWindow(object):
 
         params['proj_name'] = eval_ui('project_name', text=True)
         params['upload_only'] = int(eval_ui('upload_only', 'checkBox', v=True))
+        params['skip_check'] = int(eval_ui('skip_check', 'checkBox', v=True))
+        params['notify_complete'] = int(eval_ui('notify_complete', 'checkBox', v=True))
         params['project'] = eval_ui('project', text=True)
         params['out_path'] = eval_ui('output_dir', text=True)
         render = eval_ui('renderer', type='optionMenu', v=True)
@@ -444,9 +449,8 @@ class SubmitWindow(object):
             msg = 'ZYNC Username Authentication Failed'
             raise MayaZyncException(msg)
 
-        if params["upload_only"] == 0:
-            scene_info = window.get_scene_info(params['renderer'])
-            params['scene_info'] = scene_info
+        scene_info = window.get_scene_info(params['renderer'])
+        params['scene_info'] = scene_info
 
         z.add_path_mappings(window.path_mappings)
 
