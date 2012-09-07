@@ -267,6 +267,8 @@ class SubmitWindow(object):
 
     def upload_only_toggle( self, checked ):
         if checked:
+            cmds.textField('num_instances', e=True, en=False)
+            cmds.optionMenu('instance_type', e=True, en=False)
             cmds.checkBox('start_new_instances', e=True, en=False)
             cmds.checkBox('skip_check', e=True, en=False)
             cmds.textField('output_dir', e=True, en=False)
@@ -280,6 +282,8 @@ class SubmitWindow(object):
             cmds.textField('x_res', e=True, en=False)
             cmds.textField('y_res', e=True, en=False)
         else:
+            cmds.textField('num_instances', e=True, en=True)
+            cmds.optionMenu('instance_type', e=True, en=True)
             cmds.checkBox('start_new_instances', e=True, en=True)
             cmds.checkBox('skip_check', e=True, en=True)
             cmds.textField('output_dir', e=True, en=True)
