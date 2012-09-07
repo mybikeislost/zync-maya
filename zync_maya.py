@@ -129,12 +129,17 @@ def _vrmesh_handler(node):
     """Handles vray meshes"""
     yield (cmds.getAttr('%s.fileName' % node),)
 
+def _mrtex_handler(node):
+    """Handles mentalrayTexutre nodes"""
+    yield (cmds.getAttr('%s.fileTextureName' % node),)
+
 def get_scene_files():
     """Returns all of the files being used by the scene"""
     file_types = {'file': _file_handler,
                   'cacheFile': _cache_file_handler,
                   'diskCache': _diskCache_handler,
-                  'VRayMesh': _vrmesh_handler}
+                  'VRayMesh': _vrmesh_handler,
+                  'mentalrayTexture': _mrtex_handler}
 
     for file_type in file_types:
         handler = file_types.get(file_type)
