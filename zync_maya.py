@@ -221,8 +221,10 @@ class SubmitWindow(object):
         self.frame_step = cmds.getAttr('defaultRenderGlobals.byFrameStep')
         self.chunk_size = 10
         self.upload_only = 0
+        self.start_new_instances = 0
         self.skip_check = 0
         self.notify_complete = 0
+        self.vray_nightly = 0
 
         self.init_layers()
 
@@ -251,7 +253,46 @@ class SubmitWindow(object):
 
         cmds.textScrollList('layers', e=True, append=self.layers)
 
+        # callbacks
+        cmds.checkBox('upload_only', e=True, changeCommand=self.upload_only_toggle)
+        cmds.optionMenu('renderer', e=True, changeCommand=self.change_renderer)
+        self.change_renderer( self.renderer )
+
         return name
+
+    def upload_only_toggle( self, checked ):
+        if checked:
+            cmds.checkBox('start_new_instances', e=True, en=False)
+            cmds.checkBox('skip_check', e=True, en=False)
+            cmds.textField('output_dir', e=True, en=False)
+            cmds.optionMenu('renderer', e=True, en=False)
+            cmds.checkBox('vray_nightly', e=True, en=False)
+            cmds.textField('frange', e=True, en=False)
+            cmds.textField('frame_step', e=True, en=False)
+            cmds.textField('chunk_size', e=True, en=False)
+            cmds.optionMenu('camera', e=True, en=False)
+            cmds.textScrollList('layers', e=True, en=False)
+            cmds.textField('x_res', e=True, en=False)
+            cmds.textField('y_res', e=True, en=False)
+        else:
+            cmds.checkBox('start_new_instances', e=True, en=True)
+            cmds.checkBox('skip_check', e=True, en=True)
+            cmds.textField('output_dir', e=True, en=True)
+            cmds.optionMenu('renderer', e=True, en=True)
+            cmds.checkBox('vray_nightly', e=True, en=True)
+            cmds.textField('frange', e=True, en=True)
+            cmds.textField('frame_step', e=True, en=True)
+            cmds.textField('chunk_size', e=True, en=True)
+            cmds.optionMenu('camera', e=True, en=True)
+            cmds.textScrollList('layers', e=True, en=True)
+            cmds.textField('x_res', e=True, en=True)
+            cmds.textField('y_res', e=True, en=True)
+
+    def change_renderer( self, renderer ):
+        if renderer in ("vray", "V-Ray"):
+            cmds.checkBox('vray_nightly', e=True, en=True)
+        else:
+            cmds.checkBox('vray_nightly', e=True, en=False)
 
     def check_references(self):
         """ If there are any Maya-Binary references in the scene, raise an 
@@ -271,6 +312,7 @@ class SubmitWindow(object):
 
         params['proj_name'] = eval_ui('project_name', text=True)
         params['upload_only'] = int(eval_ui('upload_only', 'checkBox', v=True))
+        params['start_new_instances'] = int( not eval_ui('start_new_instances', 'checkBox', v=True) )
         params['skip_check'] = int(eval_ui('skip_check', 'checkBox', v=True))
         params['notify_complete'] = int(eval_ui('notify_complete', 'checkBox', v=True))
         params['project'] = eval_ui('project', text=True)
@@ -289,7 +331,7 @@ class SubmitWindow(object):
         selected_type = eval_ui('instance_type', 'optionMenu', v=True)
         for inst_type in zync.INSTANCE_TYPES:
             if selected_type.startswith( inst_type ):
-                params['instance_type'] = zync.INSTANCE_TYPES[inst_type]["csp_label"]
+                params['instance_type'] = zync.INSTANCE_TYPES[inst_type]['csp_label']
                 break
         else:
             params['instance_type'] = zync.DEFAULT_INSTANCE_TYPE
@@ -300,6 +342,11 @@ class SubmitWindow(object):
         params['camera'] = eval_ui('camera', 'optionMenu', v=True)
         params['xres'] = int(eval_ui('x_res', text=True))
         params['yres'] = int(eval_ui('y_res', text=True))
+
+        if params['upload_only'] == 0 and params['renderer'] == 'vray':
+            params['vray_nightly'] = int(eval_ui('vray_nightly', 'checkBox', v=True))
+        else:
+            params['vray_nightly'] = 0
 
         return params
 
