@@ -24,13 +24,20 @@ import time
 __author__ = 'Alex Schworer'
 __copyright__ = 'Copyright 2011, Atomic Fiction, Inc.'
 
-# REPLACE WITH PATH TO zync-python DIRECTORY
-if platform.system() in ( "Windows", "Microsoft" ):
-    API_DIR = "Z:/plugins/zync-python"
-else:
-    API_DIR = "/Volumes/server/plugins/zync-python"
+config_path = "%s/config_maya.py" % ( os.path.dirname(__file__), )
+if not os.path.exists( config_path ):
+    raise Exception( "Could not locate config_maya.py, please create." )
+from config_maya import *
+
+required_config = [ "API_DIR" ]
+
+for key in required_config:
+    if not key in globals():
+        raise Exception( "config_maya.py must define a value for %s." % ( key, ) )
+
 sys.path.append( API_DIR )
 import zync
+
 
 UI_FILE = "%s/resources/submit_dialog.ui" % ( os.path.dirname( __file__ ), )
 
