@@ -2,9 +2,15 @@
 
 Tested with Maya 2012 and 2013.
 
-## Installing
+## Config File
 
-Everything you need is included in this repository. You'll just need to point Maya to this folder to load it on startup.
+Contained in this folder you'll find a file called ```config_maya.py.example```. Make a copy of this file in the same directory, and rename it ```config_maya.py```.
+
+Edit ```config_maya.py```. It defines only one config variable, ```API_DIR```, which is the full path to your zync-python directory. Set this path, save the file, and close it.
+
+## Maya.env
+
+Now you'll need to point Maya to this folder to load it on startup.
 
 The easiest way to do this is to create a Maya.env file and point it to this folder. See included Maya.env.example for an example of how to do this.
 
@@ -23,4 +29,3 @@ To separate paths, use a semicolon (;) on Windows and a colon (:) on Linux and M
 
 For more information on setting up a Maya.env file, see the page "Setting environment variables using Maya.env" in the Maya Help Docs.
 
-Now, open up maya_zync.py. Near the top you'll see, a line that says "# REPLACE WITH PATH TO zync-python DIRECTORY". This is referring to the ZYNC Python API. As both Nuke and Maya use this API, it should be stored in a central location accessible by both softwares.
