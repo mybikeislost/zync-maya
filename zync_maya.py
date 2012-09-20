@@ -144,6 +144,12 @@ def _gpu_handler(node):
     """Handles gpuCache nodes"""
     yield (cmds.getAttr('%s.cacheFileName' % node),)
 
+def _mrOptions_handler(node):
+    """Handles mentalrayOptions nodes, for Final Gather"""
+    mapName = cmds.getAttr('%s.finalGatherFilename' % node).strip()
+    if mapName != "":
+        yield ("%srenderData/mentalray/finalgMap/%s.fgmap" % (cmds.workspace(q=True, rd=True), mapName),)
+
 def get_scene_files():
     """Returns all of the files being used by the scene"""
     file_types = {'file': _file_handler,
@@ -151,7 +157,8 @@ def get_scene_files():
                   'diskCache': _diskCache_handler,
                   'VRayMesh': _vrmesh_handler,
                   'mentalrayTexture': _mrtex_handler,
-                  'gpuCache': _gpu_handler}
+                  'gpuCache': _gpu_handler,
+                  'mentalrayOptions': _mrOptions_handler}
 
     for file_type in file_types:
         handler = file_types.get(file_type)
