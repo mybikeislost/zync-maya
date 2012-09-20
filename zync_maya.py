@@ -148,7 +148,14 @@ def _mrOptions_handler(node):
     """Handles mentalrayOptions nodes, for Final Gather"""
     mapName = cmds.getAttr('%s.finalGatherFilename' % node).strip()
     if mapName != "":
-        yield ("%srenderData/mentalray/finalgMap/%s.fgmap" % (cmds.workspace(q=True, rd=True), mapName),)
+        path = cmds.workspace(q=True, rd=True)
+        if path[-1] != "/":
+            path += "/"
+        path += "renderData/mentalray/finalgMap/"
+        path += mapName
+        if not mapName.endswith( ".fgmap" ):
+            path += ".fgmap"
+        yield (path,)
 
 def get_scene_files():
     """Returns all of the files being used by the scene"""
