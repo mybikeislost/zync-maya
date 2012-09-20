@@ -2,6 +2,12 @@
 
 Tested with Maya 2012 and 2013.
 
+## zync-python
+
+This plugin depends on zync-python, the ZYNC Python API.
+
+Before trying to install zync-maya, make sure to [download zync-python](https://github.com/zync/zync-python) and follow the setup instructions there.
+
 ## Config File
 
 Contained in this folder you'll find a file called ```config_maya.py.example```. Make a copy of this file in the same directory, and rename it ```config_maya.py```.
