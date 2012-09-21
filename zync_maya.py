@@ -157,6 +157,10 @@ def _mrOptions_handler(node):
             path += ".fgmap"
         yield (path,)
 
+def _mrIbl_handler(node):
+    """Handles mentalrayIblShape nodes"""
+    yield (cmds.getAttr('%s.texture' % node),)
+
 def get_scene_files():
     """Returns all of the files being used by the scene"""
     file_types = {'file': _file_handler,
@@ -165,7 +169,8 @@ def get_scene_files():
                   'VRayMesh': _vrmesh_handler,
                   'mentalrayTexture': _mrtex_handler,
                   'gpuCache': _gpu_handler,
-                  'mentalrayOptions': _mrOptions_handler}
+                  'mentalrayOptions': _mrOptions_handler,
+                  'mentalrayIblShape': _mrIbl_handler}
 
     for file_type in file_types:
         handler = file_types.get(file_type)
