@@ -29,7 +29,7 @@ if not os.path.exists( config_path ):
     raise Exception( "Could not locate config_maya.py, please create." )
 from config_maya import *
 
-required_config = [ "API_DIR" ]
+required_config = [ "API_DIR", "API_KEY" ]
 
 for key in required_config:
     if not key in globals():
@@ -531,7 +531,7 @@ class SubmitWindow(object):
             raise MayaZyncException(msg)
 
         try:
-            z = zync.Zync(username, password, app='maya')
+            z = zync.Zync( "maya_plugin", API_KEY, username=username, password=password )
         except zync.ZyncAuthenticationError, e:
             msg = 'ZYNC Username Authentication Failed'
             raise MayaZyncException(msg)
@@ -541,7 +541,7 @@ class SubmitWindow(object):
 
         z.add_path_mappings(window.path_mappings)
 
-        z.submit(scene_path, layers, params=params)
+        z.submit_job("maya", scene_path, layers, params=params)
         cmds.confirmDialog(title='Success',
                                message='Job submitted to ZYNC.',
                                button='OK',
