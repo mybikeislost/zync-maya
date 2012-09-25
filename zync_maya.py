@@ -541,8 +541,11 @@ class SubmitWindow(object):
             msg = 'ZYNC Username Authentication Failed'
             raise MayaZyncException(msg)
 
-        scene_info = window.get_scene_info(params['renderer'])
-        params['scene_info'] = scene_info
+        if params["upload_only"] == 1:
+            params['scene_info'] = {}
+        else:
+            scene_info = window.get_scene_info(params['renderer'])
+            params['scene_info'] = scene_info
 
         z.add_path_mappings(window.path_mappings)
 
