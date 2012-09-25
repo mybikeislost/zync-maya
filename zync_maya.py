@@ -161,6 +161,10 @@ def _mrIbl_handler(node):
     """Handles mentalrayIblShape nodes"""
     yield (cmds.getAttr('%s.texture' % node),)
 
+def _abc_handler(node):
+    """Handles AlembicNode nodes"""
+    yield (cmds.getAttr('%s.abc_File' % node),)
+
 def get_scene_files():
     """Returns all of the files being used by the scene"""
     file_types = {'file': _file_handler,
@@ -170,7 +174,8 @@ def get_scene_files():
                   'mentalrayTexture': _mrtex_handler,
                   'gpuCache': _gpu_handler,
                   'mentalrayOptions': _mrOptions_handler,
-                  'mentalrayIblShape': _mrIbl_handler}
+                  'mentalrayIblShape': _mrIbl_handler,
+                  'AlembicNode': _abc_handler}
 
     for file_type in file_types:
         handler = file_types.get(file_type)
@@ -536,8 +541,11 @@ class SubmitWindow(object):
             msg = 'ZYNC Username Authentication Failed'
             raise MayaZyncException(msg)
 
-        scene_info = window.get_scene_info(params['renderer'])
-        params['scene_info'] = scene_info
+        if params["upload_only"] == 1:
+            params['scene_info'] = {}
+        else:
+            scene_info = window.get_scene_info(params['renderer'])
+            params['scene_info'] = scene_info
 
         z.add_path_mappings(window.path_mappings)
 
