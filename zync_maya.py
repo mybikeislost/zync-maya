@@ -357,8 +357,8 @@ class SubmitWindow(object):
         params = dict()
 
         params['proj_name'] = eval_ui('project_name', text=True)
-        parent = eval_ui('parent_id', text=True)
-        if parent != None:
+        parent = eval_ui('parent_id', text=True).strip()
+        if parent != None and parent != "":
             params['parent_id'] = parent
         params['upload_only'] = int(eval_ui('upload_only', 'checkBox', v=True))
         params['start_new_instances'] = int( not eval_ui('start_new_instances', 'checkBox', v=True) )
