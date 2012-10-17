@@ -248,6 +248,7 @@ class SubmitWindow(object):
         self.project_name = project_response["response"]
         self.num_instances = 1
         self.priority = 50
+        self.parent_id = None
 
         self.project = proj_dir()
         if self.project[-1] == "/":
@@ -356,6 +357,9 @@ class SubmitWindow(object):
         params = dict()
 
         params['proj_name'] = eval_ui('project_name', text=True)
+        parent = eval_ui('parent_id', text=True)
+        if parent != None:
+            params['parent_id'] = parent
         params['upload_only'] = int(eval_ui('upload_only', 'checkBox', v=True))
         params['start_new_instances'] = int( not eval_ui('start_new_instances', 'checkBox', v=True) )
         params['skip_check'] = int(eval_ui('skip_check', 'checkBox', v=True))

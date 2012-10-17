@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>453</width>
-    <height>796</height>
+    <height>839</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,8 +18,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>441</width>
-     <height>791</height>
+     <width>445</width>
+     <height>835</height>
     </rect>
    </property>
    <property name="font">
@@ -42,7 +42,7 @@
       <property name="bottomMargin">
        <number>10</number>
       </property>
-      <item row="10" column="1">
+      <item row="11" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_9">
         <item>
          <spacer name="horizontalSpacer_9">
@@ -87,7 +87,7 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="3" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
          <widget class="QLineEdit" name="num_instances">
@@ -158,7 +158,7 @@
         </item>
        </layout>
       </item>
-      <item row="16" column="1">
+      <item row="17" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <property name="spacing">
          <number>-1</number>
@@ -271,7 +271,7 @@
         </item>
        </layout>
       </item>
-      <item row="15" column="0">
+      <item row="16" column="0">
        <widget class="QLabel" name="label_11">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -292,7 +292,7 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="label_2">
         <property name="maximumSize">
          <size>
@@ -335,7 +335,7 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
+      <item row="5" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_6">
         <item>
          <spacer name="horizontalSpacer_8">
@@ -365,7 +365,7 @@
         </item>
        </layout>
       </item>
-      <item row="16" column="0">
+      <item row="17" column="0">
        <widget class="QLabel" name="label_12">
         <property name="font">
          <font>
@@ -381,6 +381,18 @@
        </widget>
       </item>
       <item row="15" column="1">
+       <widget class="QComboBox" name="camera">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="-ann" stdset="0">
+         <string>`python &quot;cmds.submit_callb('camera')&quot;`</string>
+        </property>
+       </widget>
+      </item>
+      <item row="16" column="1">
        <widget class="QListWidget" name="layers">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -423,7 +435,7 @@
         </property>
        </widget>
       </item>
-      <item row="14" column="0">
+      <item row="15" column="0">
        <widget class="QLabel" name="label_10">
         <property name="font">
          <font>
@@ -438,19 +450,7 @@
         </property>
        </widget>
       </item>
-      <item row="14" column="1">
-       <widget class="QComboBox" name="camera">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="-ann" stdset="0">
-         <string>`python &quot;cmds.submit_callb('camera')&quot;`</string>
-        </property>
-       </widget>
-      </item>
-      <item row="13" column="0">
+      <item row="14" column="0">
        <widget class="QLabel" name="label_9">
         <property name="font">
          <font>
@@ -465,7 +465,40 @@
         </property>
        </widget>
       </item>
-      <item row="13" column="1">
+      <item row="2" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QLineEdit" name="priority">
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>50</string>
+          </property>
+          <property name="-tx" stdset="0">
+           <string>`python &quot;cmds.submit_callb('priority')&quot;`</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_4">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item row="14" column="1">
        <widget class="QLineEdit" name="chunk_size">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -486,7 +519,7 @@
         </property>
        </widget>
       </item>
-      <item row="12" column="0">
+      <item row="13" column="0">
        <widget class="QLabel" name="label_8">
         <property name="font">
          <font>
@@ -501,7 +534,7 @@
         </property>
        </widget>
       </item>
-      <item row="12" column="1">
+      <item row="13" column="1">
        <widget class="QLineEdit" name="frame_step">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -522,7 +555,7 @@
         </property>
        </widget>
       </item>
-      <item row="11" column="0">
+      <item row="12" column="0">
        <widget class="QLabel" name="label_7">
         <property name="font">
          <font>
@@ -537,7 +570,7 @@
         </property>
        </widget>
       </item>
-      <item row="9" column="0">
+      <item row="10" column="0">
        <widget class="QLabel" name="label_6">
         <property name="font">
          <font>
@@ -552,7 +585,7 @@
         </property>
        </widget>
       </item>
-      <item row="11" column="1">
+      <item row="12" column="1">
        <widget class="QLineEdit" name="frange">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -573,29 +606,7 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Output Directory:</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="1">
-       <widget class="QComboBox" name="renderer">
-        <property name="-ann" stdset="0">
-         <string>`python &quot;cmds.submit_callb('renderer')&quot;`</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="label_17">
         <property name="maximumSize">
          <size>
@@ -616,7 +627,29 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
+      <item row="9" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Output Directory:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="1">
+       <widget class="QComboBox" name="renderer">
+        <property name="-ann" stdset="0">
+         <string>`python &quot;cmds.submit_callb('renderer')&quot;`</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
        <widget class="QLabel" name="label_4">
         <property name="font">
          <font>
@@ -631,7 +664,7 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
+      <item row="9" column="1">
        <widget class="QLineEdit" name="output_dir">
         <property name="placeholderText">
          <string>Path to the output directory...</string>
@@ -641,7 +674,7 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
+      <item row="8" column="1">
        <widget class="QLineEdit" name="project">
         <property name="placeholderText">
          <string>Path to the project...</string>
@@ -651,7 +684,7 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="4" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_5">
         <item>
          <spacer name="horizontalSpacer_3">
@@ -681,40 +714,7 @@
         </item>
        </layout>
       </item>
-      <item row="1" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout_4">
-        <item>
-         <widget class="QLineEdit" name="priority">
-          <property name="maximumSize">
-           <size>
-            <width>40</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>50</string>
-          </property>
-          <property name="-tx" stdset="0">
-           <string>`python &quot;cmds.submit_callb('priority')&quot;`</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_4">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>80</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
-      </item>
-      <item row="5" column="1">
+      <item row="6" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_7">
         <item>
          <spacer name="horizontalSpacer_6">
@@ -750,7 +750,7 @@
         </item>
        </layout>
       </item>
-      <item row="6" column="1">
+      <item row="7" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_8">
         <item>
          <spacer name="horizontalSpacer_7">
@@ -783,6 +783,66 @@
            <string>`python &quot;cmds.submit_callb('notify_complete')&quot;`</string>
           </property>
          </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_18">
+        <property name="maximumSize">
+         <size>
+          <width>80</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Parent ID:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_11">
+        <item>
+         <widget class="QLineEdit" name="parent_id">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="-tx" stdset="0">
+           <string>`python &quot;cmds.submit_callb('parent_id')&quot;`</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_10">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>120</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </item>
