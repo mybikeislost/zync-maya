@@ -341,14 +341,18 @@ class SubmitWindow(object):
             cmds.checkBox('vray_nightly', e=True, en=False)
 
     def check_references(self):
-        """ If there are any Maya-Binary references in the scene, raise an 
-            Error"""
+        """
+        Run any checks to ensure all reference files are accurate. If not,
+        raise an Exception to halt the submit process.
 
-        for ref in cmds.file(q=True, r=True):
-            if ref.endswith('.mb'):
-                msg = 'Cannot render to ZYNC with a Maya Binary reference.'
-                cmds.confirmDialog(title='Binary References', message=msg)
-                raise Exception(msg)
+        This function currently does nothing. Before Maya Binary was supported
+        it checked to ensure no .mb files were being used.
+        """
+
+        #for ref in cmds.file(q=True, r=True):
+        #    if check_failed:
+        #        raise Exception(msg)
+        pass
 
     def get_render_params(self):
         """
@@ -555,7 +559,7 @@ class SubmitWindow(object):
 
         z.submit_job("maya", scene_path, layers, params=params)
         cmds.confirmDialog(title='Success',
-                               message='Job submitted to ZYNC.',
+                               message='Job submitted to ZYNC.\n\nPlease ensure your Client App is running and logged in so your job can start.',
                                button='OK',
                                defaultButton='OK')
 

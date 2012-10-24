@@ -23,6 +23,7 @@ Contained in this folder you'll find a file called ```config_maya.py.example```.
 Edit ```config_maya.py```. It defines two config variables:
 
 ```API_DIR``` - the full path to your zync-python directory.
+
 ```API_KEY``` - the API Key of the registered script, from the previous step.
 
 Set these variables, save the file, and close it.
