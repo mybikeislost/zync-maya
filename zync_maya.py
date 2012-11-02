@@ -267,6 +267,7 @@ class SubmitWindow(object):
         self.skip_check = 0
         self.notify_complete = 0
         self.vray_nightly = 0
+        self.use_vrscene = 0
 
         self.init_layers()
 
@@ -311,6 +312,7 @@ class SubmitWindow(object):
             cmds.textField('output_dir', e=True, en=False)
             cmds.optionMenu('renderer', e=True, en=False)
             cmds.checkBox('vray_nightly', e=True, en=False)
+            cmds.checkBox('use_vrscene', e=True, en=False)
             cmds.textField('frange', e=True, en=False)
             cmds.textField('frame_step', e=True, en=False)
             cmds.textField('chunk_size', e=True, en=False)
@@ -326,6 +328,7 @@ class SubmitWindow(object):
             cmds.textField('output_dir', e=True, en=True)
             cmds.optionMenu('renderer', e=True, en=True)
             cmds.checkBox('vray_nightly', e=True, en=True)
+            cmds.checkBox('use_vrscene', e=True, en=True)
             cmds.textField('frange', e=True, en=True)
             cmds.textField('frame_step', e=True, en=True)
             cmds.textField('chunk_size', e=True, en=True)
@@ -337,8 +340,10 @@ class SubmitWindow(object):
     def change_renderer( self, renderer ):
         if renderer in ("vray", "V-Ray"):
             cmds.checkBox('vray_nightly', e=True, en=True)
+            cmds.checkBox('use_vrscene', e=True, en=True)
         else:
             cmds.checkBox('vray_nightly', e=True, en=False)
+            cmds.checkBox('use_vrscene', e=True, en=False)
 
     def check_references(self):
         """
@@ -398,8 +403,10 @@ class SubmitWindow(object):
 
         if params['upload_only'] == 0 and params['renderer'] == 'vray':
             params['vray_nightly'] = int(eval_ui('vray_nightly', 'checkBox', v=True))
+            params['use_vrscene'] = int(eval_ui('use_vrscene', 'checkBox', v=True))
         else:
             params['vray_nightly'] = 0
+            params['use_vrscene'] = 0
 
         return params
 
