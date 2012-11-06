@@ -481,6 +481,8 @@ class SubmitWindow(object):
 
         if renderer == zync.VRAY_RENDERER:
             extension = cmds.getAttr('vraySettings.imageFormatStr')
+            if extension == None:
+                extension = "png"
             padding = int(cmds.getAttr('vraySettings.fileNamePadding'))
             global_prefix = get_layer_override('defaultRenderLayer', 'vraySettings', 'fileNamePrefix')
         elif renderer in (zync.SOFTWARE_RENDERER, zync.MENTAL_RAY_RENDERER):
