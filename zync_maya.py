@@ -183,7 +183,8 @@ def get_scene_files():
         for node in nodes:
             for files in handler(node):
                 for scene_file in files:
-                    yield scene_file.replace('\\', '/')
+                    if scene_file != None:
+                        yield scene_file.replace('\\', '/')
 
 def get_default_extension(renderer):
     """Returns the filename prefix for the given renderer, either mental ray 
