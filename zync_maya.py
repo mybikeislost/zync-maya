@@ -483,7 +483,7 @@ class SubmitWindow(object):
         if renderer == zync.VRAY_RENDERER:
             extension = cmds.getAttr('vraySettings.imageFormatStr')
             if extension == None:
-                extension = "png"
+                extension = 'png'
             padding = int(cmds.getAttr('vraySettings.fileNamePadding'))
             global_prefix = get_layer_override('defaultRenderLayer', 'vraySettings', 'fileNamePrefix')
         elif renderer in (zync.SOFTWARE_RENDERER, zync.MENTAL_RAY_RENDERER):
@@ -497,12 +497,21 @@ class SubmitWindow(object):
         file_prefix.append(layer_prefixes)
         files = list(set(get_scene_files()))
 
+        plugins = []
+        plugin_list = cmds.pluginInfo( query=True, pluginsInUse=True )
+        for i in range( 0, len(plugin_list), 2): 
+            plugins.append( str(plugin_list[i]) )
+
+        if len(cmds.ls(type='cacheFile')) > 0:
+            plugins.append( "cache" )
+
         scene_info = {'files': files,
                       'render_layers': self.layers,
                       'references': references,
                       'file_prefix': file_prefix,
                       'padding': padding,
-                      'extension': extension}
+                      'extension': extension,
+                      'plugins': plugins}
         return scene_info
 
     @staticmethod
