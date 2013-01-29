@@ -264,7 +264,7 @@ class SubmitWindow(object):
         self.frame_step = cmds.getAttr('defaultRenderGlobals.byFrameStep')
         self.chunk_size = 10
         self.upload_only = 0
-        self.start_new_instances = 0
+        self.start_new_slots = 0
         self.skip_check = 0
         self.notify_complete = 0
         self.vray_nightly = 0
@@ -308,7 +308,7 @@ class SubmitWindow(object):
         if checked:
             cmds.textField('num_instances', e=True, en=False)
             cmds.optionMenu('instance_type', e=True, en=False)
-            cmds.checkBox('start_new_instances', e=True, en=False)
+            cmds.checkBox('start_new_slots', e=True, en=False)
             cmds.checkBox('skip_check', e=True, en=False)
             cmds.textField('output_dir', e=True, en=False)
             cmds.optionMenu('renderer', e=True, en=False)
@@ -324,7 +324,7 @@ class SubmitWindow(object):
         else:
             cmds.textField('num_instances', e=True, en=True)
             cmds.optionMenu('instance_type', e=True, en=True)
-            cmds.checkBox('start_new_instances', e=True, en=True)
+            cmds.checkBox('start_new_slots', e=True, en=True)
             cmds.checkBox('skip_check', e=True, en=True)
             cmds.textField('output_dir', e=True, en=True)
             cmds.optionMenu('renderer', e=True, en=True)
@@ -371,7 +371,7 @@ class SubmitWindow(object):
         if parent != None and parent != "":
             params['parent_id'] = parent
         params['upload_only'] = int(eval_ui('upload_only', 'checkBox', v=True))
-        params['start_new_instances'] = int( not eval_ui('start_new_instances', 'checkBox', v=True) )
+        params['start_new_slots'] = int( not eval_ui('start_new_slots', 'checkBox', v=True) )
         params['skip_check'] = int(eval_ui('skip_check', 'checkBox', v=True))
         params['notify_complete'] = int(eval_ui('notify_complete', 'checkBox', v=True))
         params['project'] = eval_ui('project', text=True)
@@ -578,7 +578,7 @@ class SubmitWindow(object):
 
         z.submit_job("maya", scene_path, layers, params=params)
         cmds.confirmDialog(title='Success',
-                               message='Job submitted to ZYNC.\n\nPlease ensure your Client App is running and logged in so your job can start.',
+                               message='Job submitted to ZYNC.',
                                button='OK',
                                defaultButton='OK')
 
