@@ -14,7 +14,7 @@ Usage:
 """
 
 from functools import partial
-import hashlib
+import random
 import re
 import os
 import platform
@@ -43,6 +43,13 @@ UI_FILE = "%s/resources/submit_dialog.ui" % ( os.path.dirname( __file__ ), )
 
 import maya.cmds as cmds
 
+def generate_hash():
+    out = ""
+    choice = "abcdef1234567890"
+    for i in range(6):
+        out += random.choice( choice )
+    return out
+
 def generate_scene_path(extra_name=None):
     """
     Returns a hash-embedded scene path with /cloud_submit/ at the end
@@ -60,22 +67,19 @@ def generate_scene_path(extra_name=None):
 
     scene_name = os.path.basename(scene_path)
 
-    local_time = time.localtime()
-
-    times = [local_time.tm_mon, local_time.tm_mday, local_time.tm_year,
-             local_time.tm_hour, local_time.tm_min, local_time.tm_sec]
-    timecode = ''.join(['%02d' % x for x in times])
-
     old_filename = re.split('.ma', scene_name)[0]
     if extra_name:
         old_filename = '_'.join([old_filename, extra_name])
-    to_hash = '_'.join([old_filename, timecode])
-    hash = hashlib.md5(to_hash).hexdigest()[-6:]
-
-    # filename will be something like: shotName_comp_v094_37aa20.nk
+    hash = generate_hash()
     new_filename = '_'.join([old_filename, hash]) + '.ma'
+    full_filename = '%s/%s' % ( cloud_dir, new_filename )
 
-    return '%s/%s' % ( cloud_dir, new_filename )
+    while os.path.exists( full_filename ):
+        hash = generate_hash()
+        new_filename = '_'.join([old_filename, hash]) + '.ma'
+        full_filename = '%s/%s' % ( cloud_dir, new_filename )
+
+    return full_filename
 
 def label_ui(label, ui, *args, **kwargs):
     """
