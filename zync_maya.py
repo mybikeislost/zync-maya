@@ -153,8 +153,9 @@ def _mrOptions_handler(node):
             path += "/"
         path += "renderData/mentalray/finalgMap/"
         path += mapName
-        if not mapName.endswith( ".fgmap" ):
-            path += ".fgmap"
+        #if not mapName.endswith( ".fgmap" ):
+        #    path += ".fgmap"
+        path += "*"
         yield (path,)
 
 def _mrIbl_handler(node):
