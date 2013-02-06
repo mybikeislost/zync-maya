@@ -170,6 +170,15 @@ def _vrSettings_handler(node):
     """Handles VRaySettingsNode nodes, for irradiance map"""
     yield(cmds.getAttr('%s.ifile' % node),)
 
+def _particle_handler(node):
+    project_dir = cmds.workspace(q=True, rd=True)
+    scene_base, ext = os.path.splitext(os.path.basename(cmds.file(q=True, loc=True)))
+    path = project_dir
+    if path[-1] != "/":
+        path += "/" 
+    path += "particles/%s/%s*" % ( scene_base, node )
+    yield (path,)
+
 def get_scene_files():
     """Returns all of the files being used by the scene"""
     file_types = {'file': _file_handler,
@@ -181,7 +190,8 @@ def get_scene_files():
                   'mentalrayOptions': _mrOptions_handler,
                   'mentalrayIblShape': _mrIbl_handler,
                   'AlembicNode': _abc_handler,
-                  'VRaySettingsNode': _vrSettings_handler }
+                  'VRaySettingsNode': _vrSettings_handler,
+                  'particle': _particle_handler }
 
     for file_type in file_types:
         handler = file_types.get(file_type)
