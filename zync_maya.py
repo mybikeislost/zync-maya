@@ -24,22 +24,22 @@ import time
 __author__ = 'Alex Schworer'
 __copyright__ = 'Copyright 2011, Atomic Fiction, Inc.'
 
-config_path = "%s/config_maya.py" % ( os.path.dirname(__file__), )
+config_path = '%s/config_maya.py' % ( os.path.dirname(__file__), )
 if not os.path.exists( config_path ):
-    raise Exception( "Could not locate config_maya.py, please create." )
+    raise Exception('Could not locate config_maya.py, please create.')
 from config_maya import *
 
-required_config = [ "API_DIR", "API_KEY" ]
+required_config = ['API_DIR', 'API_KEY']
 
 for key in required_config:
     if not key in globals():
-        raise Exception( "config_maya.py must define a value for %s." % ( key, ) )
+        raise Exception('config_maya.py must define a value for %s.' % (key,))
 
-sys.path.append( API_DIR )
+sys.path.append(API_DIR)
 import zync
+ZYNC = zync.Zync('maya_plugin', API_KEY)
 
-
-UI_FILE = "%s/resources/submit_dialog.ui" % ( os.path.dirname( __file__ ), )
+UI_FILE = '%s/resources/submit_dialog.ui' % (os.path.dirname(__file__),)
 
 import maya.cmds as cmds
 
@@ -259,7 +259,7 @@ class SubmitWindow(object):
         if scene_name == 'unknown':
             cmds.error( 'Please save your script before launching a job.' ) 
 
-        project_response = zync.get_project_name( scene_name )
+        project_response = ZYNC.get_project_name( scene_name )
         if project_response["code"] != 0:
             cmds.error( project_response["response"] )
         self.project_name = project_response["response"]
@@ -271,7 +271,7 @@ class SubmitWindow(object):
         if self.project[-1] == "/":
             self.project = self.project[:-1]
 			
-        maya_output_response = zync.get_maya_output_path( scene_name )
+        maya_output_response = ZYNC.get_maya_output_path( scene_name )
         if maya_output_response["code"] != 0:
             cmds.error( maya_output_response["response"] )
         self.output_dir =  maya_output_response["response"]
@@ -404,9 +404,9 @@ class SubmitWindow(object):
         params['num_instances'] = int(eval_ui('num_instances', text=True))
 
         selected_type = eval_ui('instance_type', 'optionMenu', v=True)
-        for inst_type in zync.INSTANCE_TYPES:
+        for inst_type in ZYNC.INSTANCE_TYPES:
             if selected_type.startswith( inst_type ):
-                params['instance_type'] = zync.INSTANCE_TYPES[inst_type]['csp_label']
+                params['instance_type'] = ZYNC.INSTANCE_TYPES[inst_type]['csp_label']
                 break
         else:
             params['instance_type'] = zync.DEFAULT_INSTANCE_TYPE
@@ -435,11 +435,11 @@ class SubmitWindow(object):
 
     def init_instance_type(self):
         non_default = []
-        for inst_type in zync.INSTANCE_TYPES:
+        for inst_type in ZYNC.INSTANCE_TYPES:
             if inst_type == zync.DEFAULT_INSTANCE_TYPE:
-                cmds.menuItem( parent='instance_type', label='%s (%s)' % ( inst_type, zync.INSTANCE_TYPES[inst_type]["description"] ) )
+                cmds.menuItem( parent='instance_type', label='%s (%s)' % ( inst_type, ZYNC.INSTANCE_TYPES[inst_type]["description"] ) )
             else:
-                non_default.append( '%s (%s)' % ( inst_type, zync.INSTANCE_TYPES[inst_type]["description"] ) ) 
+                non_default.append( '%s (%s)' % ( inst_type, ZYNC.INSTANCE_TYPES[inst_type]["description"] ) ) 
         for label in non_default:
             cmds.menuItem( parent='instance_type', label=label )
 
@@ -479,7 +479,35 @@ class SubmitWindow(object):
         """
         layers = [x for x in cmds.ls(type='renderLayer') \
                        if x != 'defaultRenderLayer' and not ':' in x]
+
         references = cmds.file(q=True, r=True)
+
+        render_passes = {}
+        multiple_folders = False
+        element_separator = "."
+        if renderer == zync.VRAY_RENDERER and cmds.getAttr('vraySettings.imageFormatStr') != 'exr (multichannel)':
+            pass_list = cmds.ls(type='VRayRenderElement')
+            if len(pass_list) > 0:
+                multiple_folders = True if cmds.getAttr('vraySettings.relements_separateFolders') == 1 else False
+                element_separator = cmds.getAttr('vraySettings.fnes')
+                pass_layers = layers + ['defaultRenderLayer']
+                for layer in pass_layers:
+                    render_passes[layer] = []
+                    for r_pass in pass_list:
+                        if get_layer_override(layer, r_pass, 'enabled') == True:
+                            vray_name = None
+                            vray_explicit_name = None
+                            for attr_name in cmds.listAttr(r_pass):
+                                if attr_name.startswith('vray_name'):
+                                    vray_name = cmds.getAttr('%s.%s' % (r_pass, attr_name))
+                                elif attr_name.startswith('vray_explicit_name'):
+                                    vray_explicit_name = cmds.getAttr('%s.%s' % (r_pass, attr_name))
+                            if vray_explicit_name != None:
+                                render_passes[layer].append(vray_explicit_name)
+                            elif vray_name != None:
+                                render_passes[layer].append(vray_name)
+                            else:
+                                render_passes[layer].append(r_pass)
 
         layer_prefixes = dict()
         for layer in layers:
@@ -523,6 +551,9 @@ class SubmitWindow(object):
 
         scene_info = {'files': files,
                       'render_layers': self.layers,
+                      'render_passes': render_passes,
+                      'multiple_folders': multiple_folders,
+                      'element_separator': element_separator,
                       'references': references,
                       'file_prefix': file_prefix,
                       'padding': padding,
@@ -579,7 +610,8 @@ class SubmitWindow(object):
             raise MayaZyncException(msg)
 
         try:
-            z = zync.Zync( "maya_plugin", API_KEY, username=username, password=password )
+            #z = zync.Zync( "maya_plugin", API_KEY, username=username, password=password )
+            ZYNC.login( username=username, password=password )
         except zync.ZyncAuthenticationError, e:
             msg = 'ZYNC Username Authentication Failed'
             raise MayaZyncException(msg)
@@ -590,9 +622,9 @@ class SubmitWindow(object):
             scene_info = window.get_scene_info(params['renderer'])
             params['scene_info'] = scene_info
 
-        z.add_path_mappings(window.path_mappings)
+        ZYNC.add_path_mappings(window.path_mappings)
 
-        z.submit_job("maya", scene_path, layers, params=params)
+        ZYNC.submit_job("maya", scene_path, layers, params=params)
         cmds.confirmDialog(title='Success',
                                message='Job submitted to ZYNC.',
                                button='OK',
