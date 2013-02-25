@@ -179,6 +179,10 @@ def _particle_handler(node):
     path += "particles/%s/%s*" % ( scene_base, node )
     yield (path,)
 
+def _ies_handler(node):
+    """Handles VRayLightIESShape nodes, for IES lighting files"""
+    yield(cmds.getAttr('%s.iesFile' % node),)
+
 def get_scene_files():
     """Returns all of the files being used by the scene"""
     file_types = {'file': _file_handler,
@@ -191,7 +195,8 @@ def get_scene_files():
                   'mentalrayIblShape': _mrIbl_handler,
                   'AlembicNode': _abc_handler,
                   'VRaySettingsNode': _vrSettings_handler,
-                  'particle': _particle_handler }
+                  'particle': _particle_handler,
+                  'VRayLightIESShape': _ies_handler }
 
     for file_type in file_types:
         handler = file_types.get(file_type)
