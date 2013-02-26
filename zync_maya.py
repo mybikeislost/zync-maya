@@ -168,7 +168,8 @@ def _abc_handler(node):
 
 def _vrSettings_handler(node):
     """Handles VRaySettingsNode nodes, for irradiance map"""
-    yield(cmds.getAttr('%s.ifile' % node),)
+    yield(cmds.getAttr('%s.ifile' % node),
+          cmds.getAttr('%s.fnm' % node),)
 
 def _particle_handler(node):
     project_dir = cmds.workspace(q=True, rd=True)
