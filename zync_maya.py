@@ -291,6 +291,7 @@ class SubmitWindow(object):
         self.notify_complete = 0
         self.vray_nightly = 0
         self.use_vrscene = 0
+        self.distributed = 0
 
         self.init_layers()
 
@@ -321,6 +322,7 @@ class SubmitWindow(object):
 
         # callbacks
         cmds.checkBox('upload_only', e=True, changeCommand=self.upload_only_toggle)
+        cmds.checkBox('distributed', e=True, changeCommand=self.distributed_toggle)
         cmds.optionMenu('renderer', e=True, changeCommand=self.change_renderer)
         self.change_renderer( self.renderer )
 
@@ -360,13 +362,21 @@ class SubmitWindow(object):
             cmds.textField('x_res', e=True, en=True)
             cmds.textField('y_res', e=True, en=True)
 
+    def distributed_toggle( self, checked ):
+        if checked:
+            cmds.checkBox('use_vrscene', e=True, en=False)
+        else:
+            cmds.checkBox('use_vrscene', e=True, en=True)
+
     def change_renderer( self, renderer ):
         if renderer in ("vray", "V-Ray"):
             cmds.checkBox('vray_nightly', e=True, en=True)
             cmds.checkBox('use_vrscene', e=True, en=True)
+            cmds.checkBox('distributed', e=True, en=True)
         else:
             cmds.checkBox('vray_nightly', e=True, en=False)
             cmds.checkBox('use_vrscene', e=True, en=False)
+            cmds.checkBox('distributed', e=True, en=False)
 
     def check_references(self):
         """
@@ -427,9 +437,11 @@ class SubmitWindow(object):
         if params['upload_only'] == 0 and params['renderer'] == 'vray':
             params['vray_nightly'] = int(eval_ui('vray_nightly', 'checkBox', v=True))
             params['use_vrscene'] = int(eval_ui('use_vrscene', 'checkBox', v=True))
+            params['distributed'] = int(eval_ui('distributed', 'checkBox', v=True))
         else:
             params['vray_nightly'] = 0
             params['use_vrscene'] = 0
+            params['distributed'] = 0
 
         return params
 
