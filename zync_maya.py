@@ -417,6 +417,7 @@ class SubmitWindow(object):
         else:
             params['renderer'] = zync.MAYA_DEFAULT_RENDERER
 
+        params['priority'] = int(eval_ui('priority', text=True))
         params['num_instances'] = int(eval_ui('num_instances', text=True))
 
         selected_type = eval_ui('instance_type', 'optionMenu', v=True)
