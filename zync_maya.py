@@ -248,18 +248,13 @@ class SubmitWindow(object):
     """
     A Maya UI window for submitting to ZYNC
     """
-    def __init__(self, title='ZYNC Submit', path_mappings=()):
+    def __init__(self, title='ZYNC Submit'):
         """
         Constructs the window.
         You must call show() to display the window.
 
-        Path mappings: Replacements to apply for transforming paths,
-                       a list of 2-tuples:
-                        [ ('/From_Path', '/to_path') ]
-
         """
         self.title = title
-        self.path_mappings = path_mappings
 
         scene_name = cmds.file(q=True, loc=True)
         if scene_name == 'unknown':
@@ -640,8 +635,6 @@ class SubmitWindow(object):
         else:
             scene_info = window.get_scene_info(params['renderer'])
             params['scene_info'] = scene_info
-
-        ZYNC.add_path_mappings(window.path_mappings)
 
         ZYNC.submit_job("maya", scene_path, layers, params=params)
         cmds.confirmDialog(title='Success',
