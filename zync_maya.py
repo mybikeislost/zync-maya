@@ -118,7 +118,17 @@ def frame_range():
 
 def _file_handler(node):
     """Returns the file referenced by the given node"""
-    yield (cmds.getAttr('%s.fileTextureName' % node),)
+    texture_path = cmds.getAttr('%s.fileTextureName' % (node,))
+    try:
+        if cmds.getAttr('%s.useFrameExtension' % (node,)) == True:
+            texture_dir = os.path.dirname(texture_path)
+            texture_base = os.path.basename(texture_path)
+            new_base = texture_base.split('.')[0]
+            yield ('%s/%s*' % (texture_dir, new_base),)
+        else:
+            yield (texture_path,)
+    except:
+        yield (texture_path,)
 
 def _cache_file_handler(node):
     """Returns the files references by the given cacheFile node"""
