@@ -517,6 +517,9 @@ class SubmitWindow(object):
                 pass_layers = layers + ['defaultRenderLayer']
                 for layer in pass_layers:
                     render_passes[layer] = []
+                    # if render elements are disabled for this layer, skip it
+                    if get_layer_override(layer, 'vraySettings', 'relements_enableall') == False: 
+                        continue
                     for r_pass in pass_list:
                         if get_layer_override(layer, r_pass, 'enabled') == True:
                             vray_name = None
