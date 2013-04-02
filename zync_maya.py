@@ -526,12 +526,17 @@ class SubmitWindow(object):
                         if get_layer_override(layer, r_pass, 'enabled') == True:
                             vray_name = None
                             vray_explicit_name = None
+                            vray_file_name = None
                             for attr_name in cmds.listAttr(r_pass):
-                                if attr_name.startswith('vray_name'):
+                                if attr_name.startswith('vray_filename'):
+                                    vray_file_name = cmds.getAttr('%s.%s' % (r_pass, attr_name))
+                                elif attr_name.startswith('vray_name'):
                                     vray_name = cmds.getAttr('%s.%s' % (r_pass, attr_name))
                                 elif attr_name.startswith('vray_explicit_name'):
                                     vray_explicit_name = cmds.getAttr('%s.%s' % (r_pass, attr_name))
-                            if vray_explicit_name != None:
+                            if vray_file_name != None:
+                                render_passes[layer].append(vray_file_name)
+                            elif vray_explicit_name != None:
                                 render_passes[layer].append(vray_explicit_name)
                             elif vray_name != None:
                                 render_passes[layer].append(vray_name)
