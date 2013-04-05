@@ -183,11 +183,15 @@ def _vrSettings_handler(node):
 
 def _particle_handler(node):
     project_dir = cmds.workspace(q=True, rd=True)
+    if node.find("|") == -1:
+        node_base = node
+    else:
+        node_base = node.split("|")[-1]
     scene_base, ext = os.path.splitext(os.path.basename(cmds.file(q=True, loc=True)))
     path = project_dir
     if path[-1] != "/":
         path += "/" 
-    path += "particles/%s/%s*" % ( scene_base, node )
+    path += "particles/%s/%s*" % (scene_base, node_base)
     yield (path,)
 
 def _ies_handler(node):
