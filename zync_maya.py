@@ -538,14 +538,14 @@ class SubmitWindow(object):
                                     vray_name = cmds.getAttr('%s.%s' % (r_pass, attr_name))
                                 elif attr_name.startswith('vray_explicit_name'):
                                     vray_explicit_name = cmds.getAttr('%s.%s' % (r_pass, attr_name))
-                            if vray_file_name != None:
+                            if vray_file_name != None and vray_file_name != "":
                                 render_passes[layer].append(vray_file_name)
-                            elif vray_explicit_name != None:
+                            elif vray_explicit_name != None and vray_explicit_name != "":
                                 render_passes[layer].append(vray_explicit_name)
-                            elif vray_name != None:
+                            elif vray_name != None and vray_name != "":
                                 render_passes[layer].append(vray_name)
                             else:
-                                render_passes[layer].append(r_pass)
+                                continue
 
         layer_prefixes = dict()
         for layer in layers:
