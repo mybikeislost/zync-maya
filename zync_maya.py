@@ -517,6 +517,7 @@ class SubmitWindow(object):
         element_separator = "."
         if renderer == zync.VRAY_RENDERER and cmds.getAttr('vraySettings.imageFormatStr') != 'exr (multichannel)':
             pass_list = cmds.ls(type='VRayRenderElement')
+            pass_list += cmds.ls(type='VRayRenderElementSet')
             if len(pass_list) > 0:
                 multiple_folders = True if cmds.getAttr('vraySettings.relements_separateFolders') == 1 else False
                 element_separator = cmds.getAttr('vraySettings.fnes')
