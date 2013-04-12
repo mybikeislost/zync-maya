@@ -540,13 +540,20 @@ class SubmitWindow(object):
                                 elif attr_name.startswith('vray_explicit_name'):
                                     vray_explicit_name = cmds.getAttr('%s.%s' % (r_pass, attr_name))
                             if vray_file_name != None and vray_file_name != "":
-                                render_passes[layer].append(vray_file_name)
+                                final_name = vray_file_name
                             elif vray_explicit_name != None and vray_explicit_name != "":
-                                render_passes[layer].append(vray_explicit_name)
+                                final_name = vray_explicit_name
                             elif vray_name != None and vray_name != "":
-                                render_passes[layer].append(vray_name)
+                                final_name = vray_name
                             else:
                                 continue
+                            # special case for Material Select elements - these are named based on the material
+                            # they are connected to.
+                            if "vray_mtl_mtlselect" in cmds.listAttr( r_pass ):
+                                connections = cmds.listConnections( "%s.vray_mtl_mtlselect" % ( r_pass, ) )
+                                if len(connections) > 0:
+                                    final_name += "_%s" % ( str(connections[0]), )
+                            render_passes[layer].append(final_name)
 
         layer_prefixes = dict()
         for layer in layers:
