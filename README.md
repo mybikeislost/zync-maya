@@ -47,5 +47,12 @@ PYTHONPATH = C:/my/scripts/folder;Z:/path/to/plugins/zync-maya
 
 To separate paths, use a semicolon (;) on Windows and a colon (:) on Linux and Mac OS X.
 
+**Linux Only** - XBMLANGPATH must end with "%B" to work:
+
+```
+PYTHONPATH = /usr/local/zync/plugins/zync-maya
+XBMLANGPATH = /usr/local/zync/plugins/zync-maya/%B
+```
+
 For more information on setting up a Maya.env file, see the page "Setting environment variables using Maya.env" in the Maya Help Docs.
 
