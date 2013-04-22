@@ -510,6 +510,8 @@ class SubmitWindow(object):
         layers = [x for x in cmds.ls(type='renderLayer') \
                        if x != 'defaultRenderLayer' and not ':' in x]
 
+        selected_layers = eval_ui('layers', 'textScrollList', ai=True, si=True)
+
         references = cmds.file(q=True, r=True)
 
         render_passes = {}
@@ -521,8 +523,7 @@ class SubmitWindow(object):
             if len(pass_list) > 0:
                 multiple_folders = True if cmds.getAttr('vraySettings.relements_separateFolders') == 1 else False
                 element_separator = cmds.getAttr('vraySettings.fnes')
-                pass_layers = layers + ['defaultRenderLayer']
-                for layer in pass_layers:
+                for layer in selected_layers:
                     render_passes[layer] = []
                     # if render elements are disabled for this layer, skip it
                     if get_layer_override(layer, 'vraySettings', 'relements_enableall') == False: 
@@ -556,7 +557,7 @@ class SubmitWindow(object):
                             render_passes[layer].append(final_name)
 
         layer_prefixes = dict()
-        for layer in layers:
+        for layer in selected_layers:
             if renderer == zync.VRAY_RENDERER:
                 node = 'vraySettings'
                 attribute = 'fileNamePrefix'
