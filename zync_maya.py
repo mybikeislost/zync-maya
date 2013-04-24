@@ -474,16 +474,39 @@ class SubmitWindow(object):
             cmds.menuItem( parent='instance_type', label=label )
 
     def init_renderer(self):
-        # put default renderer first
-        default_renderer_name = zync.MAYA_RENDERERS[zync.MAYA_DEFAULT_RENDERER]
+        #
+        #   Try to detect the currently selected renderer, so it will be selected
+        #   when the form appears. If we can't, fall back to the default set in zync.py.
+        #
+        try:
+            current_renderer = cmds.getAttr("defaultRenderGlobals.currentRenderer")
+            if current_renderer == "mentalRay":
+                default_renderer_name = zync.MAYA_RENDERERS[zync.MENTAL_RAY_RENDERER]
+                self.renderer = zync.MENTAL_RAY_RENDERER
+            elif current_renderer == "mayaSoftware":
+                default_renderer_name = zync.MAYA_RENDERERS[zync.SOFTWARE_RENDERER]
+                self.renderer = zync.SOFTWARE_RENDERER
+            elif current_renderer == "vray":
+                default_renderer_name = zync.MAYA_RENDERERS[zync.VRAY_RENDERER]
+                self.renderer = zync.VRAY_RENDERER
+            else:
+                default_renderer_name = zync.MAYA_RENDERERS[zync.MAYA_DEFAULT_RENDERER]
+                self.renderer = zync.MAYA_DEFAULT_RENDERER
+        except:
+            default_renderer_name = zync.MAYA_RENDERERS[zync.MAYA_DEFAULT_RENDERER]
+            self.renderer = zync.MAYA_DEFAULT_RENDERER
+
+        #
+        #   Adding the current renderer first means it will be selected by default.
+        #
         cmds.menuItem(parent='renderer',
                       label=default_renderer_name)
-
+        #
+        #   Add the rest of the renderers to the list.
+        #
         for item in zync.MAYA_RENDERERS.values():
             if item != default_renderer_name:
                 cmds.menuItem(parent='renderer', label=item)
-
-        self.renderer = zync.MAYA_DEFAULT_RENDERER
 
     def init_camera(self):
         cam_parents = [cmds.listRelatives(x, ap=True)[-1] for x in cmds.ls(cameras=True)]
