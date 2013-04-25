@@ -198,6 +198,20 @@ def _ies_handler(node):
     """Handles VRayLightIESShape nodes, for IES lighting files"""
     yield(cmds.getAttr('%s.iesFile' % node),)
 
+def _fur_handler(node):
+    """Handles FurDescription nodes"""
+    #
+    #   Find all "Map" attributes and see if they have stored file paths.
+    #
+    for attr in cmds.listAttr(node):
+        if attr.find("Map") != -1 and cmds.attributeQuery(attr, node=node, at=True) == "typed":
+            try:
+                map_path = cmds.getAttr("%s.%s[0]" % (node, attr))
+                if map_path != None:
+                    yield (map_path,)
+            except:
+                pass
+
 def get_scene_files():
     """Returns all of the files being used by the scene"""
     file_types = {'file': _file_handler,
@@ -211,7 +225,8 @@ def get_scene_files():
                   'AlembicNode': _abc_handler,
                   'VRaySettingsNode': _vrSettings_handler,
                   'particle': _particle_handler,
-                  'VRayLightIESShape': _ies_handler }
+                  'VRayLightIESShape': _ies_handler,
+                  'FurDescription': _fur_handler}
 
     for file_type in file_types:
         handler = file_types.get(file_type)
