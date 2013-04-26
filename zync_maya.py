@@ -634,6 +634,8 @@ class SubmitWindow(object):
         if len(cmds.ls(type='cacheFile')) > 0:
             plugins.append( "cache" )
 
+        version = " ".join(str(cmds.fileInfo( "version", query=True )[0]).split(" ")[:-1]).strip()
+
         scene_info = {'files': files,
                       'render_layers': self.layers,
                       'render_passes': render_passes,
@@ -643,7 +645,8 @@ class SubmitWindow(object):
                       'file_prefix': file_prefix,
                       'padding': padding,
                       'extension': extension,
-                      'plugins': plugins}
+                      'plugins': plugins,
+                      'version': version}
         return scene_info
 
     @staticmethod
@@ -695,7 +698,6 @@ class SubmitWindow(object):
             raise MayaZyncException(msg)
 
         try:
-            #z = zync.Zync( "maya_plugin", API_KEY, username=username, password=password )
             ZYNC.login( username=username, password=password )
         except zync.ZyncAuthenticationError, e:
             msg = 'ZYNC Username Authentication Failed'
