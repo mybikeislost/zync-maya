@@ -116,15 +116,19 @@ def frame_range():
     end = str(int(cmds.getAttr('defaultRenderGlobals.endFrame')))
     return '%s-%s' % (start, end)
 
+def seq_to_glob(in_path):
+    head = os.path.dirname(in_path)
+    base = os.path.basename(in_path)
+    match = list(re.finditer('\d+', base))[-1]
+    new_base = '%s*%s' % (base[:match.start()], base[match.end():])
+    return '%s/%s' % (head, new_base)
+
 def _file_handler(node):
     """Returns the file referenced by the given node"""
     texture_path = cmds.getAttr('%s.fileTextureName' % (node,))
     try:
         if cmds.getAttr('%s.useFrameExtension' % (node,)) == True:
-            texture_dir = os.path.dirname(texture_path)
-            texture_base = os.path.basename(texture_path)
-            new_base = texture_base.split('.')[0]
-            yield ('%s/%s*' % (texture_dir, new_base),)
+            yield (seq_to_glob(texture_path),)
         else:
             yield (texture_path,)
     except:
