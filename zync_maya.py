@@ -223,6 +223,10 @@ def _fur_handler(node):
             except:
                 pass
 
+def _ptex_handler(node):
+    """Handles Mental Ray ptex nodes"""
+    yield(cmds.getAttr('%s.S00' % node),)
+
 def get_scene_files():
     """Returns all of the files being used by the scene"""
     file_types = {'file': _file_handler,
@@ -237,7 +241,8 @@ def get_scene_files():
                   'VRaySettingsNode': _vrSettings_handler,
                   'particle': _particle_handler,
                   'VRayLightIESShape': _ies_handler,
-                  'FurDescription': _fur_handler}
+                  'FurDescription': _fur_handler,
+                  'mib_ptex_lookup': _ptex_handler}
 
     for file_type in file_types:
         handler = file_types.get(file_type)
