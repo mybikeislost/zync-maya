@@ -565,6 +565,8 @@ class SubmitWindow(object):
                        if x != 'defaultRenderLayer' and not ':' in x]
 
         selected_layers = eval_ui('layers', 'textScrollList', ai=True, si=True)
+        if selected_layers == None:
+            selected_layers = []
 
         references = cmds.file(q=True, r=True)
 
@@ -719,11 +721,8 @@ class SubmitWindow(object):
             msg = 'ZYNC Username Authentication Failed'
             raise MayaZyncException(msg)
 
-        if params["upload_only"] == 1:
-            params['scene_info'] = {}
-        else:
-            scene_info = window.get_scene_info(params['renderer'])
-            params['scene_info'] = scene_info
+        scene_info = window.get_scene_info(params['renderer'])
+        params['scene_info'] = scene_info
 
         ZYNC.submit_job("maya", scene_path, layers, params=params)
         cmds.confirmDialog(title='Success',
