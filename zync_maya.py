@@ -231,6 +231,17 @@ def _substance_handler(node):
     """Handles Vray Substance nodes"""
     yield(cmds.getAttr('%s.p' % node),)
 
+def _imagePlane_handler(node):
+    """Handles Image Planes"""
+    texture_path = cmds.getAttr('%s.imageName' % (node,))
+    try:
+        if cmds.getAttr('%s.useFrameExtension' % (node,)) == True:
+            yield (seq_to_glob(texture_path),)
+        else:
+            yield (texture_path,)
+    except:
+        yield (texture_path,)
+
 def get_scene_files():
     """Returns all of the files being used by the scene"""
     file_types = {'file': _file_handler,
@@ -247,7 +258,8 @@ def get_scene_files():
                   'VRayLightIESShape': _ies_handler,
                   'FurDescription': _fur_handler,
                   'mib_ptex_lookup': _ptex_handler,
-                  'substance': _substance_handler}
+                  'substance': _substance_handler,
+                  'imagePlane': _imagePlane_handler}
 
     for file_type in file_types:
         handler = file_types.get(file_type)
