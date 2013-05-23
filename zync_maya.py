@@ -129,6 +129,8 @@ def _file_handler(node):
     try:
         if cmds.getAttr('%s.useFrameExtension' % (node,)) == True:
             yield (seq_to_glob(texture_path),)
+        elif texture_path.find("<UDIM>") != -1:
+            yield (texture_path.replace( "<UDIM>", "*" ),)
         else:
             yield (texture_path,)
     except:
