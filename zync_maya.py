@@ -336,10 +336,19 @@ class SubmitWindow(object):
         if self.project[-1] == "/":
             self.project = self.project[:-1]
 			
-        maya_output_response = ZYNC.get_maya_output_path( scene_name )
-        if maya_output_response["code"] != 0:
-            cmds.error( maya_output_response["response"] )
-        self.output_dir =  maya_output_response["response"]
+        # set output directory. if the workspace has a mapping for "images", use that.
+        # otherwise default to the images/ folder.
+        self.output_dir = cmds.workspace(q=True, rd=True)
+        if self.output_dir[-1] != '/':
+            self.output_dir += '/'
+        images_rule = cmds.workspace(fileRuleEntry='images')
+        if images_rule != None and images_rule.strip() != '':
+            if images_rule[0] == '/' or images_rule[1] == ':':
+                self.output_dir = images_rule
+            else:
+                self.output_dir += images_rule
+        else:
+            self.output_dir += 'images'
 
         self.frange = frame_range()
         self.frame_step = cmds.getAttr('defaultRenderGlobals.byFrameStep')
