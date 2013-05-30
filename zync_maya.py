@@ -244,6 +244,12 @@ def _imagePlane_handler(node):
     except:
         yield (texture_path,)
 
+def _mesh_handler(node):
+    """Handles Mesh nodes, in case they are using MR Proxies"""
+    proxy_path = cmds.getAttr('%s.miProxyFile' % (node,))
+    if proxy_path != None:
+        yield (proxy_path,)
+
 def get_scene_files():
     """Returns all of the files being used by the scene"""
     file_types = {'file': _file_handler,
@@ -261,7 +267,8 @@ def get_scene_files():
                   'FurDescription': _fur_handler,
                   'mib_ptex_lookup': _ptex_handler,
                   'substance': _substance_handler,
-                  'imagePlane': _imagePlane_handler}
+                  'imagePlane': _imagePlane_handler,
+                  'mesh': _mesh_handler}
 
     for file_type in file_types:
         handler = file_types.get(file_type)
