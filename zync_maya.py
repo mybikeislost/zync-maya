@@ -209,7 +209,7 @@ def _particle_handler(node):
 
 def _ies_handler(node):
     """Handles VRayLightIESShape nodes, for IES lighting files"""
-    yield(cmds.getAttr('%s.iesFile' % node),)
+    yield (cmds.getAttr('%s.iesFile' % node),)
 
 def _fur_handler(node):
     """Handles FurDescription nodes"""
@@ -246,9 +246,12 @@ def _imagePlane_handler(node):
 
 def _mesh_handler(node):
     """Handles Mesh nodes, in case they are using MR Proxies"""
-    proxy_path = cmds.getAttr('%s.miProxyFile' % (node,))
-    if proxy_path != None:
-        yield (proxy_path,)
+    try:
+        proxy_path = cmds.getAttr('%s.miProxyFile' % (node,))
+        if proxy_path != None:
+            yield (proxy_path,)
+    except:
+        pass
 
 def get_scene_files():
     """Returns all of the files being used by the scene"""
