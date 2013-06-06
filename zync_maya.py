@@ -755,18 +755,25 @@ class SubmitWindow(object):
 
         try:
             ZYNC.login( username=username, password=password )
-        except zync.ZyncAuthenticationError, e:
+        except zync.ZyncAuthenticationError as e:
             msg = 'ZYNC Username Authentication Failed'
             raise MayaZyncException(msg)
 
         scene_info = window.get_scene_info(params['renderer'])
         params['scene_info'] = scene_info
 
-        ZYNC.submit_job("maya", scene_path, layers, params=params)
-        cmds.confirmDialog(title='Success',
+        try:
+            ZYNC.submit_job("maya", scene_path, layers, params=params)
+            cmds.confirmDialog(title='Success',
                                message='Job submitted to ZYNC.',
                                button='OK',
                                defaultButton='OK')
+        except zync.ZyncPreflightError as e:
+            cmds.confirmDialog(title='Preflight Check Failed',
+                               message=str(e),
+                               button='OK',
+                               defaultButton='OK')
+            
 
 def submit_dialog():
     submit_window = SubmitWindow()
