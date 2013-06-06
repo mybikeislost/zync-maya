@@ -370,6 +370,7 @@ class SubmitWindow(object):
         self.vray_nightly = 0
         self.use_vrscene = 0
         self.distributed = 0
+        self.use_mi = 0
 
         self.init_layers()
 
@@ -417,6 +418,7 @@ class SubmitWindow(object):
             cmds.optionMenu('renderer', e=True, en=False)
             cmds.checkBox('vray_nightly', e=True, en=False)
             cmds.checkBox('use_vrscene', e=True, en=False)
+            cmds.checkBox('use_mi', e=True, en=False)
             cmds.textField('frange', e=True, en=False)
             cmds.textField('frame_step', e=True, en=False)
             cmds.textField('chunk_size', e=True, en=False)
@@ -434,6 +436,7 @@ class SubmitWindow(object):
             cmds.optionMenu('renderer', e=True, en=True)
             cmds.checkBox('vray_nightly', e=True, en=True)
             cmds.checkBox('use_vrscene', e=True, en=True)
+            cmds.checkBox('use_mi', e=True, en=True)
             cmds.textField('frange', e=True, en=True)
             cmds.textField('frame_step', e=True, en=True)
             cmds.textField('chunk_size', e=True, en=True)
@@ -457,6 +460,10 @@ class SubmitWindow(object):
             cmds.checkBox('vray_nightly', e=True, en=False)
             cmds.checkBox('use_vrscene', e=True, en=False)
             cmds.checkBox('distributed', e=True, en=False)
+        if renderer in ("mr", "Mental Ray"):
+            cmds.checkBox('use_mi', e=True, en=True)
+        else:
+            cmds.checkBox('use_mi', e=True, en=False)
 
     def check_references(self):
         """
@@ -519,10 +526,17 @@ class SubmitWindow(object):
             params['vray_nightly'] = int(eval_ui('vray_nightly', 'checkBox', v=True))
             params['use_vrscene'] = int(eval_ui('use_vrscene', 'checkBox', v=True))
             params['distributed'] = int(eval_ui('distributed', 'checkBox', v=True))
+            params['use_mi'] = 0
+        elif params['upload_only'] == 0 and params['renderer'] == 'mr':
+            params['vray_nightly'] = 0
+            params['use_vrscene'] = 0
+            params['distributed'] = 0
+            params['use_mi'] = int(eval_ui('use_mi', 'checkBox', v=True))
         else:
             params['vray_nightly'] = 0
             params['use_vrscene'] = 0
             params['distributed'] = 0
+            params['use_mi'] = 0
 
         return params
 
