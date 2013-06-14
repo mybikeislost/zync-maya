@@ -370,7 +370,13 @@ class SubmitWindow(object):
         self.vray_nightly = 0
         self.use_vrscene = 0
         self.distributed = 0
-        self.use_mi = 0
+        self.use_mi = 1
+
+        mi_setting = ZYNC.get_config( var="USE_MI" )
+        if mi_setting in ( None, "", 1, "1" ):
+            self.force_mi = True
+        else:
+            self.force_mi = False
 
         self.init_layers()
 
@@ -431,12 +437,20 @@ class SubmitWindow(object):
             cmds.optionMenu('instance_type', e=True, en=True)
             cmds.checkBox('start_new_slots', e=True, en=True)
             cmds.checkBox('skip_check', e=True, en=True)
-            cmds.checkBox('distributed', e=True, en=True)
             cmds.textField('output_dir', e=True, en=True)
             cmds.optionMenu('renderer', e=True, en=True)
-            cmds.checkBox('vray_nightly', e=True, en=True)
-            cmds.checkBox('use_vrscene', e=True, en=True)
-            cmds.checkBox('use_mi', e=True, en=True)
+            if eval_ui('renderer', type='optionMenu', v=True) in ("vray", "V-Ray"):
+                cmds.checkBox('vray_nightly', e=True, en=True)
+                cmds.checkBox('use_vrscene', e=True, en=True)
+                cmds.checkBox('distributed', e=True, en=True)
+            else:
+                cmds.checkBox('vray_nightly', e=True, en=False)
+                cmds.checkBox('use_vrscene', e=True, en=False)
+                cmds.checkBox('distributed', e=True, en=False)
+            if eval_ui('renderer', type='optionMenu', v=True) in ("mr", "Mental Ray") and not self.force_mi:
+                cmds.checkBox('use_mi', e=True, en=True)
+            else:
+                cmds.checkBox('use_mi', e=True, en=False)
             cmds.textField('frange', e=True, en=True)
             cmds.textField('frame_step', e=True, en=True)
             cmds.textField('chunk_size', e=True, en=True)
@@ -461,9 +475,14 @@ class SubmitWindow(object):
             cmds.checkBox('use_vrscene', e=True, en=False)
             cmds.checkBox('distributed', e=True, en=False)
         if renderer in ("mr", "Mental Ray"):
-            cmds.checkBox('use_mi', e=True, en=True)
+            if self.force_mi:
+                cmds.checkBox('use_mi', e=True, en=False)
+            else:
+                cmds.checkBox('use_mi', e=True, en=True)
+            cmds.checkBox('use_mi', e=True, v=True)
         else:
             cmds.checkBox('use_mi', e=True, en=False)
+            cmds.checkBox('use_mi', e=True, v=False)
 
     def check_references(self):
         """
