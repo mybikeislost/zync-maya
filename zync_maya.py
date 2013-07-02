@@ -286,9 +286,9 @@ def get_default_extension(renderer):
     """Returns the filename prefix for the given renderer, either mental ray 
        or maya software.
     """
-    if renderer == zync.SOFTWARE_RENDERER:
+    if renderer == "sw":
         menu_grp = 'imageMenuMayaSW'
-    elif renderer == zync.MENTAL_RAY_RENDERER:
+    elif renderer == "mr":
         menu_grp = 'imageMenuMentalRay'
     else:
         raise Exception('Invalid Renderer: %s' % renderer)
@@ -516,8 +516,8 @@ class SubmitWindow(object):
         params['out_path'] = eval_ui('output_dir', text=True)
         render = eval_ui('renderer', type='optionMenu', v=True)
 
-        for k in zync.MAYA_RENDERERS:
-            if zync.MAYA_RENDERERS[k] == render:
+        for k in ZYNC.MAYA_RENDERERS:
+            if ZYNC.MAYA_RENDERERS[k] == render:
                 params['renderer'] = k
                 break
         else:
@@ -583,19 +583,25 @@ class SubmitWindow(object):
         try:
             current_renderer = cmds.getAttr("defaultRenderGlobals.currentRenderer")
             if current_renderer == "mentalRay":
-                default_renderer_name = zync.MAYA_RENDERERS[zync.MENTAL_RAY_RENDERER]
-                self.renderer = zync.MENTAL_RAY_RENDERER
+                default_renderer_name = ZYNC.MAYA_RENDERERS["mr"]
+                self.renderer = "mr"
             elif current_renderer == "mayaSoftware":
-                default_renderer_name = zync.MAYA_RENDERERS[zync.SOFTWARE_RENDERER]
-                self.renderer = zync.SOFTWARE_RENDERER
+                default_renderer_name = ZYNC.MAYA_RENDERERS["sw"]
+                self.renderer = "sw"
             elif current_renderer == "vray":
-                default_renderer_name = zync.MAYA_RENDERERS[zync.VRAY_RENDERER]
+                default_renderer_name = ZYNC.MAYA_RENDERERS["vray"]
                 self.renderer = zync.VRAY_RENDERER
+            elif current_renderer == "arnold":
+                if "arnold" in ZYNC.MAYA_RENDERERS:
+                    default_renderer_name = ZYNC.MAYA_RENDERERS["arnold"]
+                    self.renderer = "arnold"
+                else:
+                    raise Exception( "Arnold not supported for this site, using default ZYNC renderer." )
             else:
-                default_renderer_name = zync.MAYA_RENDERERS[zync.MAYA_DEFAULT_RENDERER]
+                default_renderer_name = ZYNC.MAYA_RENDERERS[zync.MAYA_DEFAULT_RENDERER]
                 self.renderer = zync.MAYA_DEFAULT_RENDERER
         except:
-            default_renderer_name = zync.MAYA_RENDERERS[zync.MAYA_DEFAULT_RENDERER]
+            default_renderer_name = ZYNC.MAYA_RENDERERS[zync.MAYA_DEFAULT_RENDERER]
             self.renderer = zync.MAYA_DEFAULT_RENDERER
 
         #
@@ -606,7 +612,7 @@ class SubmitWindow(object):
         #
         #   Add the rest of the renderers to the list.
         #
-        for item in zync.MAYA_RENDERERS.values():
+        for item in ZYNC.MAYA_RENDERERS.values():
             if item != default_renderer_name:
                 cmds.menuItem(parent='renderer', label=item)
 
@@ -644,7 +650,7 @@ class SubmitWindow(object):
         render_passes = {}
         multiple_folders = False
         element_separator = "."
-        if renderer == zync.VRAY_RENDERER and cmds.getAttr('vraySettings.imageFormatStr') != 'exr (multichannel)':
+        if renderer == "vray" and cmds.getAttr('vraySettings.imageFormatStr') != 'exr (multichannel)':
             pass_list = cmds.ls(type='VRayRenderElement')
             pass_list += cmds.ls(type='VRayRenderElementSet')
             if len(pass_list) > 0:
@@ -685,11 +691,11 @@ class SubmitWindow(object):
 
         layer_prefixes = dict()
         for layer in selected_layers:
-            if renderer == zync.VRAY_RENDERER:
+            if renderer == "vray":
                 node = 'vraySettings'
                 attribute = 'fileNamePrefix'
                 format_attr = 'imageFormatStr'
-            elif renderer in (zync.SOFTWARE_RENDERER, zync.MENTAL_RAY_RENDERER):
+            elif renderer in ("sw", "mr"):
                 node = 'defaultRenderGlobals'
                 attribute = 'imageFilePrefix'
             try:
@@ -698,14 +704,20 @@ class SubmitWindow(object):
             except Exception:
                 pass
 
-        if renderer == zync.VRAY_RENDERER:
+        if renderer == "vray":
             extension = cmds.getAttr('vraySettings.imageFormatStr')
             if extension == None:
                 extension = 'png'
             padding = int(cmds.getAttr('vraySettings.fileNamePadding'))
             global_prefix = get_layer_override('defaultRenderLayer', 'vraySettings', 'fileNamePrefix')
-        elif renderer in (zync.SOFTWARE_RENDERER, zync.MENTAL_RAY_RENDERER):
-            extension = get_default_extension(renderer)
+        elif renderer in ("sw", "mr"):
+            extension = cmds.getAttr('defaultRenderGlobals.imfPluginKey')
+            if extension == None or extension == '':
+                extension = get_default_extension(renderer)
+            padding = int(cmds.getAttr('defaultRenderGlobals.extensionPadding'))
+            global_prefix = get_layer_override('defaultRenderLayer', 'defaultRenderGlobals', 'imageFilePrefix')
+        elif renderer == "arnold":
+            extension = cmds.getAttr('defaultRenderGlobals.imfPluginKey')
             padding = int(cmds.getAttr('defaultRenderGlobals.extensionPadding'))
             global_prefix = get_layer_override('defaultRenderLayer', 'defaultRenderGlobals', 'imageFilePrefix')
 
