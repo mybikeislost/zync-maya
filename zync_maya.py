@@ -42,6 +42,7 @@ ZYNC = zync.Zync('maya_plugin', API_KEY)
 UI_FILE = '%s/resources/submit_dialog.ui' % (os.path.dirname(__file__),)
 
 import maya.cmds as cmds
+import maya.mel
 
 def generate_scene_path(extra_name=None):
     """
@@ -309,6 +310,22 @@ def get_layer_override(layer, node, attribute='imageFilePrefix'):
     layer_override = cmds.getAttr(attr)
     cmds.editRenderLayerGlobals(currentRenderLayer=cur_layer)
     return layer_override
+
+def get_maya_version():
+    api_version = maya.mel.eval("about -api")
+    maya_version = 2013 # default
+    # 2012
+    if api_version in range( 201215, 201299 ):
+        maya_version = 2012
+    # 2013
+    elif api_version in range( 201300, 201349 ):
+        maya_version = 2013
+    # 2013.5
+    elif api_version in range( 201350, 201399 ):
+        maya_version = 2013.5
+    else:
+        maya_version = " ".join(str(cmds.fileInfo( "version", query=True )[0]).split(" ")[:-1]).strip()
+    return str(maya_version)
 
 class MayaZyncException(Exception):
     """
@@ -735,7 +752,7 @@ class SubmitWindow(object):
         if len(cmds.ls(type='cacheFile')) > 0:
             plugins.append( "cache" )
 
-        version = " ".join(str(cmds.fileInfo( "version", query=True )[0]).split(" ")[:-1]).strip()
+        version = get_maya_version() 
 
         scene_info = {'files': files,
                       'render_layers': self.layers,
