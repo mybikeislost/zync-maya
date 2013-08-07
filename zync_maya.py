@@ -749,8 +749,26 @@ class SubmitWindow(object):
         for i in range( 0, len(plugin_list), 2): 
             plugins.append( str(plugin_list[i]) )
 
+        # detect MentalCore
+        mentalcore_used = False
+        try:
+            mc_nodes = cmds.ls(type='core_globals')
+            if len(mc_nodes) == 0:
+                mentalcore_used = False
+            else:
+                mc_node = mc_nodes[0]
+                if cmds.getAttr('%s.ec' % (mc_node,)) == True:
+                    mentalcore_used = True
+                else:
+                    mentalcore_used = False
+        except:
+            mentalcore_used = False
+        if mentalcore_used:
+            plugins.append('mentalcore')
+
+        # detect use of cache files
         if len(cmds.ls(type='cacheFile')) > 0:
-            plugins.append( "cache" )
+            plugins.append('cache')
 
         version = get_maya_version() 
 
