@@ -662,7 +662,21 @@ class SubmitWindow(object):
         if selected_layers == None:
             selected_layers = []
 
-        references = cmds.file(q=True, r=True)
+        #
+        #   Detect a list of referenced files. We must use ls() instead of file(q=True, r=True)
+        #   because the latter will only detect references one level down, not nested references.
+        #
+        references = []
+        unresolved_references = []
+        for ref_node in cmds.ls(type='reference'):
+            try:
+                ref_file = cmds.referenceQuery(ref_node, filename=True)
+                references.append(ref_file)
+
+                un_ref_file = cmds.referenceQuery(ref_node, filename=True, unresolvedName=True)
+                unresolved_references.append(un_ref_file)
+            except:
+                pass
 
         render_passes = {}
         multiple_folders = False
@@ -778,6 +792,7 @@ class SubmitWindow(object):
                       'multiple_folders': multiple_folders,
                       'element_separator': element_separator,
                       'references': references,
+                      'unresolved_references': unresolved_references,
                       'file_prefix': file_prefix,
                       'padding': padding,
                       'extension': extension,
