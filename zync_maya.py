@@ -323,8 +323,15 @@ def get_maya_version():
     # 2013.5
     elif api_version in range( 201350, 201399 ):
         maya_version = 2013.5
+    # 2014
+    elif api_version in range( 201400, 201499 ):
+        maya_version = 2014
     else:
-        maya_version = " ".join(str(cmds.fileInfo( "version", query=True )[0]).split(" ")[:-1]).strip()
+        version_split = str(cmds.fileInfo( "version", query=True )[0]).split(" ")
+        if len(version_split) > 1:
+            maya_version = " ".join(version_split[:-1]).strip()
+        else:
+            maya_version = " ".join(version_split).strip()
     return str(maya_version)
 
 class MayaZyncException(Exception):
