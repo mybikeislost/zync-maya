@@ -142,8 +142,9 @@ def _cache_file_handler(node):
     path = cmds.getAttr('%s.cachePath' % node)
     cache_name = cmds.getAttr('%s.cacheName' % node)
 
-    yield (os.path.join(path, '%s.mc' % cache_name),
-           os.path.join(path, '%s.xml' % cache_name),)
+    yield ('%s/%s.mc' % (path, cache_name),
+           '%s/%s.mcx' % (path, cache_name),
+           '%s/%s.xml' % (path, cache_name),)
 
 def _diskCache_handler(node):
     """Returns disk caches"""
