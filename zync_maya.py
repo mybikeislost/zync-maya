@@ -197,15 +197,24 @@ def _vrSettings_handler(node):
 
 def _particle_handler(node):
     project_dir = cmds.workspace(q=True, rd=True)
-    if node.find("|") == -1:
+    if project_dir[-1] == '/':
+        project_dir = project_dir[:-1]
+    if node.find('|') == -1:
         node_base = node
     else:
-        node_base = node.split("|")[-1]
-    scene_base, ext = os.path.splitext(os.path.basename(cmds.file(q=True, loc=True)))
-    path = project_dir
-    if path[-1] != "/":
-        path += "/" 
-    path += "particles/%s/%s*" % (scene_base, node_base)
+        node_base = node.split('|')[-1]
+    path = None
+    try:
+        startup_cache = cmds.getAttr('%s.scp' % (node,)).strip()
+        if startup_cache in (None, ''):
+            path = None
+        else:
+            path = '%s/particles/%s/%s*' % (project_dir, startup_cache, node_base)
+    except:
+        path = None
+    if path == None:
+        scene_base, ext = os.path.splitext(os.path.basename(cmds.file(q=True, loc=True)))
+        path = '%s/particles/%s/%s*' % (project_dir, scene_base, node_base)
     yield (path,)
 
 def _ies_handler(node):
@@ -254,6 +263,16 @@ def _mesh_handler(node):
     except:
         pass
 
+def _dynGlobals_handler(node):
+    """Handles dynGlobals nodes"""
+    project_dir = cmds.workspace(q=True, rd=True)
+    if project_dir[-1] == '/':
+        project_dir = project_dir[:-1]
+    cache_dir = cmds.getAttr('%s.cd' % (node,)).strip()
+    if cache_dir not in (None, ''):
+        path = '%s/particles/%s/*' % (project_dir, cache_dir)
+        yield (path,)
+
 def get_scene_files():
     """Returns all of the files being used by the scene"""
     file_types = {'file': _file_handler,
@@ -272,7 +291,8 @@ def get_scene_files():
                   'mib_ptex_lookup': _ptex_handler,
                   'substance': _substance_handler,
                   'imagePlane': _imagePlane_handler,
-                  'mesh': _mesh_handler}
+                  'mesh': _mesh_handler,
+                  'dynGlobals': _dynGlobals_handler}
 
     for file_type in file_types:
         handler = file_types.get(file_type)
