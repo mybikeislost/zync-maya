@@ -382,7 +382,8 @@ class SubmitWindow(object):
         project_response = ZYNC.get_project_name( scene_name )
         if project_response["code"] != 0:
             cmds.error( project_response["response"] )
-        self.project_name = project_response["response"]
+        self.new_project_name = project_response["response"]
+
         self.num_instances = 1
         self.priority = 50
         self.parent_id = None
@@ -450,11 +451,22 @@ class SubmitWindow(object):
 
         cmds.textScrollList('layers', e=True, append=self.layers)
 
+        # check for existing projects to determine how project selection should
+        # be displayed
+        num_existing_projs = cmds.optionMenu('existing_project_name', q=True, ni=True)
+        if num_existing_projs == 0:
+            cmds.radioButton('existing_project', e=True, en=False)
+        else:
+            cmds.radioButton('existing_project', e=True, en=True)
+
         # callbacks
         cmds.checkBox('upload_only', e=True, changeCommand=self.upload_only_toggle)
         cmds.checkBox('distributed', e=True, changeCommand=self.distributed_toggle)
         cmds.optionMenu('renderer', e=True, changeCommand=self.change_renderer)
+        cmds.radioButton('new_project', e=True, onCommand=self.select_new_project)
+        cmds.radioButton('existing_project', e=True, onCommand=self.select_existing_project)
         self.change_renderer( self.renderer )
+        self.select_existing_project( True )
 
         return name
 
@@ -529,6 +541,16 @@ class SubmitWindow(object):
             cmds.checkBox('use_mi', e=True, en=False)
             cmds.checkBox('use_mi', e=True, v=False)
 
+    def select_new_project(self, selected):
+        if selected:
+            cmds.textField('new_project_name', e=True, en=True)
+            cmds.optionMenu('existing_project_name', e=True, en=False)
+
+    def select_existing_project(self, selected):
+        if selected:
+            cmds.textField('new_project_name', e=True, en=False)
+            cmds.optionMenu('existing_project_name', e=True, en=True)
+
     def check_references(self):
         """
         Run any checks to ensure all reference files are accurate. If not,
@@ -549,7 +571,14 @@ class SubmitWindow(object):
        """
         params = dict()
 
-        params['proj_name'] = eval_ui('project_name', text=True)
+        if cmds.radioButton('existing_project', q=True, sl=True) == True:
+            proj_name = eval_ui('existing_project_name', 'optionMenu', v=True)
+            if proj_name == None or proj_name.strip() == '':
+                cmds.error('Your project name cannot be blank. Please select New Project and enter a name.')
+        else:
+            proj_name = eval_ui('new_project_name', text=True)
+        params['proj_name'] = proj_name
+
         parent = eval_ui('parent_id', text=True).strip()
         if parent != None and parent != "":
             params['parent_id'] = parent
@@ -610,6 +639,35 @@ class SubmitWindow(object):
         """
         cmds.showWindow(self.name)
 
+    def init_layers(self):
+        self.layers = []
+        try:
+            all_layers = cmds.ls(type='renderLayer',showNamespace=True)
+            for i in range( 0, len(all_layers), 2 ):
+                if all_layers[i+1] == ':':
+                    self.layers.append( all_layers[i] )
+        except Exception:
+            self.layers = cmds.ls(type='renderLayer')
+
+    #
+    #   These init_* functions get run automatcially when the UI file is loaded.
+    #   The function names must match the name of the UI element e.g. init_camera()
+    #   will be run when the "camera" UI element is initialized.
+    #
+
+    def init_existing_project_name(self):
+        project_response = ZYNC.get_project_list()
+        if project_response["code"] != 0:
+            cmds.error( project_response["response"] )
+        self.projects = project_response["response"]
+        project_found = False
+        for project_name in self.projects:
+            cmds.menuItem(parent='existing_project_name', label=project_name)
+            if project_name == self.new_project_name:
+                project_found = True
+        if project_found:
+            cmds.optionMenu('existing_project_name', e=True, v=self.new_project_name)
+
     def init_instance_type(self):
         non_default = []
         for inst_type in ZYNC.INSTANCE_TYPES:
@@ -650,32 +708,21 @@ class SubmitWindow(object):
             self.renderer = zync.MAYA_DEFAULT_RENDERER
 
         #
-        #   Adding the current renderer first means it will be selected by default.
+        #   Add the list of renderers to UI element.
         #
-        cmds.menuItem(parent='renderer',
-                      label=default_renderer_name)
-        #
-        #   Add the rest of the renderers to the list.
-        #
+        rend_found = False
         for item in ZYNC.MAYA_RENDERERS.values():
-            if item != default_renderer_name:
-                cmds.menuItem(parent='renderer', label=item)
+            cmds.menuItem(parent='renderer', label=item)
+            if item == default_renderer_name:
+                rend_found = True
+        if rend_found:
+            cmds.optionMenu('renderer', e=True, v=default_renderer_name)
 
     def init_camera(self):
         cam_parents = [cmds.listRelatives(x, ap=True)[-1] for x in cmds.ls(cameras=True)]
         for cam in cam_parents:
             if ( cmds.getAttr( cam + '.renderable') ) == True:
                 cmds.menuItem( parent='camera', label=cam )	
-
-    def init_layers(self):
-        self.layers = []
-        try:
-            all_layers = cmds.ls(type='renderLayer',showNamespace=True)
-            for i in range( 0, len(all_layers), 2 ):
-                if all_layers[i+1] == ':':
-                    self.layers.append( all_layers[i] )
-        except Exception:
-            self.layers = cmds.ls(type='renderLayer')
 
     def get_scene_info(self, renderer):
         """
