@@ -466,7 +466,7 @@ class SubmitWindow(object):
         cmds.radioButton('new_project', e=True, onCommand=self.select_new_project)
         cmds.radioButton('existing_project', e=True, onCommand=self.select_existing_project)
         self.change_renderer( self.renderer )
-        self.select_existing_project( True )
+        self.select_new_project( True )
 
         return name
 

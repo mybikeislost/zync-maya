@@ -374,32 +374,6 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0" alignment="Qt::AlignRight">
-       <widget class="QRadioButton" name="new_project">
-        <property name="text">
-         <string>      New Project:</string>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="-ann" stdset="0">
-         <string>`python &quot;cmds.submit_callb('new_project')&quot;`</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" alignment="Qt::AlignRight">
-       <widget class="QRadioButton" name="existing_project">
-        <property name="text">
-         <string>Existing Project:</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-        <property name="-ann" stdset="0">
-         <string>`python &quot;cmds.submit_callb('existing_project')&quot;`</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="1">
        <widget class="QComboBox" name="existing_project_name">
         <property name="-ann" stdset="0">
@@ -960,6 +934,32 @@
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QRadioButton" name="new_project">
+        <property name="text">
+         <string>      New Project:</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <property name="-ann" stdset="0">
+         <string>`python &quot;cmds.submit_callb('new_project')&quot;`</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QRadioButton" name="existing_project">
+        <property name="text">
+         <string>Existing Project:</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+        <property name="-ann" stdset="0">
+         <string>`python &quot;cmds.submit_callb('existing_project')&quot;`</string>
         </property>
        </widget>
       </item>
