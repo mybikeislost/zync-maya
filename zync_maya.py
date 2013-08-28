@@ -322,15 +322,42 @@ def get_default_extension(renderer):
     else:
         return val.split()[-1][1:-1]
 
-def get_layer_override(layer, node, attribute='imageFilePrefix'):
-    """Helper method to return the layer override value for the given node and attribute"""
+LAYER_INFO = {}
+def collect_layer_info(layer, renderer):
     cur_layer = cmds.editRenderLayerGlobals(q=True, currentRenderLayer=True)
-
     cmds.editRenderLayerGlobals(currentRenderLayer=layer)
-    attr = '.'.join([node, attribute])
-    layer_override = cmds.getAttr(attr)
+
+    layer_info = {}
+
+    # get list of active render passes
+    layer_info['render_passes'] = []
+    if renderer == "vray" and cmds.getAttr('vraySettings.imageFormatStr') != 'exr (multichannel)' and cmds.getAttr('vraySettings.relements_enableall') != False: 
+        pass_list = cmds.ls(type='VRayRenderElement')
+        pass_list += cmds.ls(type='VRayRenderElementSet')
+        for r_pass in pass_list:
+            if cmds.getAttr('%s.enabled' % (r_pass,)) == True:
+                layer_info['render_passes'].append(r_pass)
+
+    # get prefix information
+    if renderer == 'vray':
+        node = 'vraySettings'
+        attribute = 'fileNamePrefix'
+    elif renderer in ("sw", "mr"):
+        node = 'defaultRenderGlobals'
+        attribute = 'imageFilePrefix'
+    try:
+        layer_prefix = cmds.getAttr('%s.%s' % (node, attribute))
+        layer_info['prefix'] = layer_prefix
+    except Exception:
+        layer_info['prefix'] = ''
+
     cmds.editRenderLayerGlobals(currentRenderLayer=cur_layer)
-    return layer_override
+    return layer_info
+
+def get_layer_override(layer, renderer, field):
+    if layer not in LAYER_INFO:
+        LAYER_INFO[layer] = collect_layer_info(layer, renderer)
+    return LAYER_INFO[layer][field]
 
 def get_maya_version():
     api_version = maya.mel.eval("about -api")
@@ -764,11 +791,9 @@ class SubmitWindow(object):
                 element_separator = cmds.getAttr('vraySettings.fnes')
                 for layer in selected_layers:
                     render_passes[layer] = []
-                    # if render elements are disabled for this layer, skip it
-                    if get_layer_override(layer, 'vraySettings', 'relements_enableall') == False: 
-                        continue
+                    enabled_passes = get_layer_override(layer, renderer, 'render_passes')
                     for r_pass in pass_list:
-                        if get_layer_override(layer, r_pass, 'enabled') == True:
+                        if r_pass in enabled_passes:
                             vray_name = None
                             vray_explicit_name = None
                             vray_file_name = None
@@ -797,35 +822,24 @@ class SubmitWindow(object):
 
         layer_prefixes = dict()
         for layer in selected_layers:
-            if renderer == "vray":
-                node = 'vraySettings'
-                attribute = 'fileNamePrefix'
-                format_attr = 'imageFormatStr'
-            elif renderer in ("sw", "mr"):
-                node = 'defaultRenderGlobals'
-                attribute = 'imageFilePrefix'
-            try:
-                layer_prefix = get_layer_override(layer, node, attribute)
+            layer_prefix = get_layer_override(layer, renderer, 'prefix')
+            if layer_prefix != None:
                 layer_prefixes[layer] = layer_prefix
-            except Exception:
-                pass
 
         if renderer == "vray":
             extension = cmds.getAttr('vraySettings.imageFormatStr')
             if extension == None:
                 extension = 'png'
             padding = int(cmds.getAttr('vraySettings.fileNamePadding'))
-            global_prefix = get_layer_override('defaultRenderLayer', 'vraySettings', 'fileNamePrefix')
         elif renderer in ("sw", "mr"):
             extension = cmds.getAttr('defaultRenderGlobals.imfPluginKey')
             if extension == None or extension == '':
                 extension = get_default_extension(renderer)
             padding = int(cmds.getAttr('defaultRenderGlobals.extensionPadding'))
-            global_prefix = get_layer_override('defaultRenderLayer', 'defaultRenderGlobals', 'imageFilePrefix')
         elif renderer == "arnold":
             extension = cmds.getAttr('defaultRenderGlobals.imfPluginKey')
             padding = int(cmds.getAttr('defaultRenderGlobals.extensionPadding'))
-            global_prefix = get_layer_override('defaultRenderLayer', 'defaultRenderGlobals', 'imageFilePrefix')
+        global_prefix = get_layer_override('defaultRenderLayer', renderer, 'prefix')
 
         extension = extension[:3]
 
@@ -861,6 +875,13 @@ class SubmitWindow(object):
 
         version = get_maya_version() 
 
+        arnold_version = ''
+        if renderer == 'arnold':
+            try:
+                arnold_version = str(cmds.pluginInfo('mtoa', query=True, version=True)) 
+            except:
+                raise Exception('Could not detect Arnold version. This is required to render Arnold jobs. Do you have the Arnold plugin loaded?')
+
         scene_info = {'files': files,
                       'render_layers': self.layers,
                       'render_passes': render_passes,
@@ -872,7 +893,8 @@ class SubmitWindow(object):
                       'padding': padding,
                       'extension': extension,
                       'plugins': plugins,
-                      'version': version}
+                      'version': version,
+                      'arnold_version': arnold_version}
         return scene_info
 
     @staticmethod
