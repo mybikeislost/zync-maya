@@ -269,9 +269,9 @@ def _dynGlobals_handler(node):
     project_dir = cmds.workspace(q=True, rd=True)
     if project_dir[-1] == '/':
         project_dir = project_dir[:-1]
-    cache_dir = cmds.getAttr('%s.cd' % (node,)).strip()
+    cache_dir = cmds.getAttr('%s.cd' % (node,))
     if cache_dir not in (None, ''):
-        path = '%s/particles/%s/*' % (project_dir, cache_dir)
+        path = '%s/particles/%s/*' % (project_dir, cache_dir.strip())
         yield (path,)
 
 def get_scene_files():
