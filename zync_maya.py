@@ -228,13 +228,15 @@ def _fur_handler(node):
     #   Find all "Map" attributes and see if they have stored file paths.
     #
     for attr in cmds.listAttr(node):
-        if attr.find("Map") != -1 and cmds.attributeQuery(attr, node=node, at=True) == "typed":
-            try:
-                map_path = cmds.getAttr("%s.%s[0]" % (node, attr))
-                if map_path != None:
-                    yield (map_path,)
-            except:
-                pass
+        if attr.find('Map') != -1 and cmds.attributeQuery(attr, node=node, at=True) == 'typed':
+            index_list = ['0', '1']
+            for index in index_list:
+                try:
+                    map_path = cmds.getAttr('%s.%s[%s]' % (node, attr, index))
+                    if map_path != None and map_path != '':
+                        yield (map_path,)
+                except:
+                    pass
 
 def _ptex_handler(node):
     """Handles Mental Ray ptex nodes"""
