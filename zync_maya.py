@@ -276,6 +276,10 @@ def _dynGlobals_handler(node):
         path = '%s/particles/%s/*' % (project_dir, cache_dir.strip())
         yield (path,)
 
+def _aiStandIn_handler(node):
+    """Handles aiStandIn nodes"""
+    yield (cmds.getAttr('%s.dso' % (node,)),)
+
 def get_scene_files():
     """Returns all of the files being used by the scene"""
     file_types = {'file': _file_handler,
@@ -295,7 +299,8 @@ def get_scene_files():
                   'substance': _substance_handler,
                   'imagePlane': _imagePlane_handler,
                   'mesh': _mesh_handler,
-                  'dynGlobals': _dynGlobals_handler}
+                  'dynGlobals': _dynGlobals_handler,
+                  'aiStandIn': _aiStandIn_handler}
 
     for file_type in file_types:
         handler = file_types.get(file_type)
