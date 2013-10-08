@@ -451,6 +451,7 @@ class SubmitWindow(object):
         self.use_vrscene = 0
         self.distributed = 0
         self.use_mi = 1
+        self.ignore_plugin_errors = 0
 
         mi_setting = ZYNC.get_config( var="USE_MI" )
         if mi_setting in ( None, "", 1, "1" ):
@@ -622,8 +623,9 @@ class SubmitWindow(object):
         params['notify_complete'] = int(eval_ui('notify_complete', 'checkBox', v=True))
         params['project'] = eval_ui('project', text=True)
         params['out_path'] = eval_ui('output_dir', text=True)
-        render = eval_ui('renderer', type='optionMenu', v=True)
+        params['ignore_plugin_errors'] = int(eval_ui('ignore_plugin_errors', 'checkBox', v=True))
 
+        render = eval_ui('renderer', type='optionMenu', v=True)
         for k in ZYNC.MAYA_RENDERERS:
             if ZYNC.MAYA_RENDERERS[k] == render:
                 params['renderer'] = k
