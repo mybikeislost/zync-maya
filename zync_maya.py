@@ -361,6 +361,9 @@ def collect_layer_info(layer, renderer):
     cmds.editRenderLayerGlobals(currentRenderLayer=cur_layer)
     return layer_info
 
+def clear_layer_info():
+    LAYER_INFO = {}
+
 def get_layer_override(layer, renderer, field):
     if layer not in LAYER_INFO:
         LAYER_INFO[layer] = collect_layer_info(layer, renderer)
@@ -766,6 +769,9 @@ class SubmitWindow(object):
         We use this to allow ZYNC to skip the file checks.
 
         """
+
+        clear_layer_info()
+
         layers = [x for x in cmds.ls(type='renderLayer') \
                        if x != 'defaultRenderLayer' and not ':' in x]
 
