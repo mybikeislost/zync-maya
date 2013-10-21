@@ -362,9 +362,11 @@ def collect_layer_info(layer, renderer):
     return layer_info
 
 def clear_layer_info():
+    global LAYER_INFO
     LAYER_INFO = {}
 
 def get_layer_override(layer, renderer, field):
+    global LAYER_INFO
     if layer not in LAYER_INFO:
         LAYER_INFO[layer] = collect_layer_info(layer, renderer)
     return LAYER_INFO[layer][field]
