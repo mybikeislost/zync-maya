@@ -129,11 +129,22 @@ def _file_handler(node):
     texture_path = cmds.getAttr('%s.fileTextureName' % (node,))
     try:
         if cmds.getAttr('%s.useFrameExtension' % (node,)) == True:
-            yield (seq_to_glob(texture_path),)
-        elif texture_path.find("<UDIM>") != -1:
-            yield (texture_path.replace( "<UDIM>", "*" ),)
+            out_path = seq_to_glob(texture_path)
+        elif texture_path.find('<UDIM>') != -1:
+            out_path = texture_path.replace('<UDIM>', '*')
         else:
-            yield (texture_path,)
+            out_path = texture_path
+        yield (out_path,)
+        arnold_use_tx = False
+        try:
+            arnold_use_tx = cmds.getAttr('defaultArnoldRenderOptions.use_existing_tiled_textures')
+        except:
+            arnold_use_tx = False
+        if arnold_use_tx:
+            head, ext = os.path.splitext(out_path)
+            tx_path = '%s.tx' % (head,)
+            if os.path.exists(tx_path):
+                yield (tx_path,)
     except:
         yield (texture_path,)
 
