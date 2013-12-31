@@ -16,13 +16,13 @@ Clone this repository to the desired location on your local system. If you're do
 
 Log in to the ZYNC Web Console, and go to the My Account page.
 
-In the "Scripts" section, you may see a script called "maya_plugin". If you do, save the API key shown there for the next step. If you don't see "maya_plugin", create a new script and name it that. An API key will be generated which you'll use in the next step.
+In the "Scripts" section, you may see a script called "maya_plugin". If you do, save the API key shown there for the next step. If you don't see "maya_plugin", create a new script with that name. An API key will be generated which you'll use in the next step.
 
 ## Config File
 
 Contained in this folder you'll find a file called ```config_maya.py.example```. Make a copy of this file in the same directory, and rename it ```config_maya.py```.
 
-Edit ```config_maya.py```. It defines two config variables:
+Edit ```config_maya.py``` in a Text Editor. It defines two config variables:
 
 ```API_DIR``` - the full path to your zync-python directory.
 
