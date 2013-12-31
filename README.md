@@ -8,13 +8,15 @@ This plugin depends on zync-python, the ZYNC Python API.
 
 Before trying to install zync-maya, make sure to [download zync-python](https://github.com/zync/zync-python) and follow the setup instructions there.
 
+## Clone the Repository
+
+Clone this repository to the desired location on your local system. If you're doing a site-wide plugin install, this will have to be a location accessible by everyone using the plugins. 
+
 ## Register Script
 
 Log in to the ZYNC Web Console, and go to the My Account page.
 
-In the "Scripts" section, you'll be able to register a new script. Call it "maya_plugin".
-
-This will generate an API Key, which you'll see listed next to the registered script. Save this key for the next step.
+In the "Scripts" section, you may see a script called "maya_plugin". If you do, save the API key shown there for the next step. If you don't see "maya_plugin", create a new script and name it that. An API key will be generated which you'll use in the next step.
 
 ## Config File
 
