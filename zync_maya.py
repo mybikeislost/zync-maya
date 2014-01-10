@@ -903,6 +903,13 @@ class SubmitWindow(object):
 
         version = get_maya_version() 
 
+        vray_version = ''
+        if renderer == 'vray':
+            try:
+                vray_version = str(cmds.pluginInfo('vrayformaya', query=True, version=True)) 
+            except:
+                raise Exception('Could not detect Vray version. This is required to render Vray jobs. Do you have the Vray plugin loaded?')
+
         arnold_version = ''
         if renderer == 'arnold':
             try:
@@ -922,7 +929,8 @@ class SubmitWindow(object):
                       'extension': extension,
                       'plugins': plugins,
                       'version': version,
-                      'arnold_version': arnold_version}
+                      'arnold_version': arnold_version,
+                      'vray_version': vray_version}
         return scene_info
 
     @staticmethod
