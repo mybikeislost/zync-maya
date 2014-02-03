@@ -654,7 +654,7 @@ class SubmitWindow(object):
 
         selected_type = eval_ui('instance_type', 'optionMenu', v=True)
         for inst_type in ZYNC.INSTANCE_TYPES:
-            if selected_type.startswith( inst_type ):
+            if selected_type.split(' ')[0] == inst_type:
                 params['instance_type'] = ZYNC.INSTANCE_TYPES[inst_type]['csp_label']
                 break
         else:
