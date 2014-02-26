@@ -774,7 +774,7 @@ class SubmitWindow(object):
         cam_parents = [cmds.listRelatives(x, ap=True)[-1] for x in cmds.ls(cameras=True)]
         for cam in cam_parents:
             if ( cmds.getAttr( cam + '.renderable') ) == True:
-                cmds.menuItem( parent='camera', label=cam )	
+                cmds.menuItem( parent='camera', label=cam )
 
     def get_scene_info(self, renderer):
         """
@@ -832,11 +832,11 @@ class SubmitWindow(object):
                                     vray_name = cmds.getAttr('%s.%s' % (r_pass, attr_name))
                                 elif attr_name.startswith('vray_explicit_name'):
                                     vray_explicit_name = cmds.getAttr('%s.%s' % (r_pass, attr_name))
-                            if vray_file_name != None and vray_file_name != "":
+                            if vray_file_name:
                                 final_name = vray_file_name
-                            elif vray_explicit_name != None and vray_explicit_name != "":
+                            elif vray_explicit_name:
                                 final_name = vray_explicit_name
-                            elif vray_name != None and vray_name != "":
+                            elif vray_name:
                                 final_name = vray_name
                             else:
                                 continue
@@ -844,7 +844,7 @@ class SubmitWindow(object):
                             # they are connected to.
                             if "vray_mtl_mtlselect" in cmds.listAttr( r_pass ):
                                 connections = cmds.listConnections( "%s.vray_mtl_mtlselect" % ( r_pass, ) )
-                                if len(connections) > 0:
+                                if connections:
                                     final_name += "_%s" % ( str(connections[0]), )
                             render_passes[layer].append(final_name)
 
@@ -861,7 +861,7 @@ class SubmitWindow(object):
             padding = int(cmds.getAttr('vraySettings.fileNamePadding'))
         elif renderer in ("sw", "mr"):
             extension = cmds.getAttr('defaultRenderGlobals.imfPluginKey')
-            if extension == None or extension == '':
+            if not extension:
                 extension = get_default_extension(renderer)
             padding = int(cmds.getAttr('defaultRenderGlobals.extensionPadding'))
         elif renderer == "arnold":
