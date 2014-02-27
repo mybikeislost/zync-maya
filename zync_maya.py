@@ -832,11 +832,11 @@ class SubmitWindow(object):
                                     vray_name = cmds.getAttr('%s.%s' % (r_pass, attr_name))
                                 elif attr_name.startswith('vray_explicit_name'):
                                     vray_explicit_name = cmds.getAttr('%s.%s' % (r_pass, attr_name))
-                            if vray_file_name:
+                            if vray_file_name != None and vray_file_name != "":
                                 final_name = vray_file_name
-                            elif vray_explicit_name:
+                            elif vray_explicit_name != None and vray_explicit_name != "":
                                 final_name = vray_explicit_name
-                            elif vray_name:
+                            elif vray_name != None and vray_name != "":
                                 final_name = vray_name
                             else:
                                 continue
