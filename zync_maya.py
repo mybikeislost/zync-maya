@@ -296,7 +296,7 @@ def _aiImage_handler(node):
     yield (cmds.getAttr('%s.filename' % (node,)),)
     
 def _aiPhotometricLight_handler(node):
-    """Handles aiImage nodes"""
+    """Handles aiPhotometricLight nodes"""
     yield (cmds.getAttr('%s.aiFilename' % (node,)),)
     
 def get_scene_files():
