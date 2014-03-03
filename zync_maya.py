@@ -291,6 +291,14 @@ def _aiStandIn_handler(node):
     """Handles aiStandIn nodes"""
     yield (cmds.getAttr('%s.dso' % (node,)),)
 
+def _aiImage_handler(node):
+    """Handles aiImage nodes"""
+    yield (cmds.getAttr('%s.filename' % (node,)),)
+    
+def _aiPhotometricLight_handler(node):
+    """Handles aiImage nodes"""
+    yield (cmds.getAttr('%s.aiFilename' % (node,)),)
+    
 def get_scene_files():
     """Returns all of the files being used by the scene"""
     file_types = {'file': _file_handler,
@@ -311,7 +319,9 @@ def get_scene_files():
                   'imagePlane': _imagePlane_handler,
                   'mesh': _mesh_handler,
                   'dynGlobals': _dynGlobals_handler,
-                  'aiStandIn': _aiStandIn_handler}
+                  'aiStandIn': _aiStandIn_handler,
+                  'aiImage': _aiImage_handler,
+                  'aiPhotometricLight': _aiPhotometricLight_handler}
 
     for file_type in file_types:
         handler = file_types.get(file_type)
