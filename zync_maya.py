@@ -499,33 +499,59 @@ class SubmitWindow(object):
 
     def loadUI(self, ui_file):
         """
-        Loads the UI and does an post-load commands
+        Loads the UI and does post-load commands.
         """
 
-        # monkey patch the cmds module for use when the UI gets loaded
+        #
+        #   Create two new functions, cmds.submit_callb() and cmds.do_submit_callb().
+        #   These functions are called by UI elements in resources/submit_dialog.ui.
+        #   Each UI element in that file uses these functions to query this Object
+        #   for its initial value.
+        #
+        #   For example, the "use_vrscene" CheckBox calls cmds.submit_callb('use_vrscene'),
+        #   which causes its value to be set to whatever the value of self.use_vrscene
+        #   is currently set to.
+        #
         cmds.submit_callb = partial(self.get_initial_value, self)
         cmds.do_submit_callb = partial(self.submit, self)
 
+        #
+        #   Delete the "SubmitDialog" window if it exists.
+        #
         if cmds.window('SubmitDialog', q=True, ex=True):
             cmds.deleteUI('SubmitDialog')
+        
+        #
+        #   Load the UI file.
+        #
         name = cmds.loadUI(f=ui_file)
 
+        #
+        #   Add all render layers to the "layers" List.
+        #
         cmds.textScrollList('layers', e=True, append=self.layers)
 
-        # check for existing projects to determine how project selection should
-        # be displayed
+        #
+        #   Check for existing projects to determine the default position of
+        #   the "existing_project" radio button.
+        #
         num_existing_projs = cmds.optionMenu('existing_project_name', q=True, ni=True)
         if num_existing_projs == 0:
             cmds.radioButton('existing_project', e=True, en=False)
         else:
             cmds.radioButton('existing_project', e=True, en=True)
 
-        # callbacks
+        #
+        #   Callbacks - set up functions to be called as UI elements are modified.
+        #
         cmds.checkBox('upload_only', e=True, changeCommand=self.upload_only_toggle)
         cmds.checkBox('distributed', e=True, changeCommand=self.distributed_toggle)
         cmds.optionMenu('renderer', e=True, changeCommand=self.change_renderer)
         cmds.radioButton('new_project', e=True, onCommand=self.select_new_project)
         cmds.radioButton('existing_project', e=True, onCommand=self.select_existing_project)
+        #
+        #   Call a few of those callbacks now to set initial UI state.
+        #
         self.change_renderer( self.renderer )
         self.select_new_project( True )
 
