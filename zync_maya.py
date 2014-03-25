@@ -259,14 +259,16 @@ def _substance_handler(node):
 
 def _imagePlane_handler(node):
     """Handles Image Planes"""
-    texture_path = cmds.getAttr('%s.imageName' % (node,))
-    try:
-        if cmds.getAttr('%s.useFrameExtension' % (node,)) == True:
-            yield (seq_to_glob(texture_path),)
-        else:
+    # only return the path if the display mode is NOT set to "None"
+    if cmds.getAttr('%s.displayMode' % (node,)) != 0:
+        texture_path = cmds.getAttr('%s.imageName' % (node,))
+        try:
+            if cmds.getAttr('%s.useFrameExtension' % (node,)) == True:
+                yield (seq_to_glob(texture_path),)
+            else:
+                yield (texture_path,)
+        except:
             yield (texture_path,)
-    except:
-        yield (texture_path,)
 
 def _mesh_handler(node):
     """Handles Mesh nodes, in case they are using MR Proxies"""
