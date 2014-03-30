@@ -15,9 +15,11 @@ Usage:
 
 from functools import partial
 import hashlib
-import re
+import math
 import os
 import platform
+import re
+import string
 import sys
 import time
 
@@ -116,6 +118,22 @@ def frame_range():
     start = str(int(cmds.getAttr('defaultRenderGlobals.startFrame')))
     end = str(int(cmds.getAttr('defaultRenderGlobals.endFrame')))
     return '%s-%s' % (start, end)
+
+def udim_range():
+    bake_sets = list(bake_set for bake_set in cmds.ls(type='VRayBakeOptions') \
+        if bake_set != 'vrayDefaultBakeOptions')
+    u_max = 0
+    v_max = 0
+    for bake_set in bake_sets:
+        conn_list = cmds.listConnections(bake_set)
+        if conn_list == None or len(conn_list) == 0:
+            continue
+        uv_info = cmds.polyEvaluate(conn_list[0], b2=True)
+        if uv_info[0][1] > u_max:
+            u_max = int(math.ceil(uv_info[0][1]))
+        if uv_info[1][1] > v_max:
+            v_max = int(math.ceil(uv_info[1][1]))
+    return '1001-%d' % (1001+u_max+(10*v_max))
 
 def seq_to_glob(in_path):
     head = os.path.dirname(in_path)
@@ -469,6 +487,7 @@ class SubmitWindow(object):
             self.output_dir += 'images'
 
         self.frange = frame_range()
+        self.udim_range = udim_range()
         self.frame_step = cmds.getAttr('defaultRenderGlobals.byFrameStep')
         self.chunk_size = 10
         self.upload_only = 0
@@ -476,9 +495,8 @@ class SubmitWindow(object):
         self.skip_check = 0
         self.notify_complete = 0
         self.vray_nightly = 0
-        self.use_vrscene = 0
+        self.use_standalone = 0
         self.distributed = 0
-        self.use_mi = 1
         self.ignore_plugin_errors = 0
 
         mi_setting = ZYNC.get_config( var="USE_MI" )
@@ -487,10 +505,11 @@ class SubmitWindow(object):
         else:
             self.force_mi = False
 
-        self.init_layers()
-
         self.x_res = cmds.getAttr('defaultResolution.width')
         self.y_res = cmds.getAttr('defaultResolution.height')
+ 
+        self.init_layers()
+        self.init_bake()
 
         self.username = ''
         self.password = ''
@@ -510,9 +529,12 @@ class SubmitWindow(object):
         #   Each UI element in that file uses these functions to query this Object
         #   for its initial value.
         #
-        #   For example, the "use_vrscene" CheckBox calls cmds.submit_callb('use_vrscene'),
-        #   which causes its value to be set to whatever the value of self.use_vrscene
+        #   For example, the "frange" textbox calls cmds.submit_callb('frange'),
+        #   which causes its value to be set to whatever the value of self.frange
         #   is currently set to.
+        #
+        #   Initial values can also be function based. For example, the "renderer" dropdown 
+        #   calls cmds.submit_callb('renderer'), which in turn triggers self.init_renderer().
         #
         cmds.submit_callb = partial(self.get_initial_value, self)
         cmds.do_submit_callb = partial(self.submit, self)
@@ -524,24 +546,10 @@ class SubmitWindow(object):
             cmds.deleteUI('SubmitDialog')
         
         #
-        #   Load the UI file.
+        #   Load the UI file. See the init_* functions below for more info on
+        #   what each UI element does as it's loaded.
         #
         name = cmds.loadUI(f=ui_file)
-
-        #
-        #   Add all render layers to the "layers" List.
-        #
-        cmds.textScrollList('layers', e=True, append=self.layers)
-
-        #
-        #   Check for existing projects to determine the default position of
-        #   the "existing_project" radio button.
-        #
-        num_existing_projs = cmds.optionMenu('existing_project_name', q=True, ni=True)
-        if num_existing_projs == 0:
-            cmds.radioButton('existing_project', e=True, en=False)
-        else:
-            cmds.radioButton('existing_project', e=True, en=True)
 
         #
         #   Callbacks - set up functions to be called as UI elements are modified.
@@ -549,6 +557,7 @@ class SubmitWindow(object):
         cmds.checkBox('upload_only', e=True, changeCommand=self.upload_only_toggle)
         cmds.checkBox('distributed', e=True, changeCommand=self.distributed_toggle)
         cmds.optionMenu('renderer', e=True, changeCommand=self.change_renderer)
+        cmds.optionMenu('job_type', e=True, changeCommand=self.change_job_type)
         cmds.radioButton('new_project', e=True, onCommand=self.select_new_project)
         cmds.radioButton('existing_project', e=True, onCommand=self.select_existing_project)
         #
@@ -569,8 +578,7 @@ class SubmitWindow(object):
             cmds.textField('output_dir', e=True, en=False)
             cmds.optionMenu('renderer', e=True, en=False)
             cmds.checkBox('vray_nightly', e=True, en=False)
-            cmds.checkBox('use_vrscene', e=True, en=False)
-            cmds.checkBox('use_mi', e=True, en=False)
+            cmds.checkBox('use_standalone', e=True, en=False)
             cmds.textField('frange', e=True, en=False)
             cmds.textField('frame_step', e=True, en=False)
             cmds.textField('chunk_size', e=True, en=False)
@@ -587,16 +595,15 @@ class SubmitWindow(object):
             cmds.optionMenu('renderer', e=True, en=True)
             if eval_ui('renderer', type='optionMenu', v=True) in ("vray", "V-Ray"):
                 cmds.checkBox('vray_nightly', e=True, en=True)
-                cmds.checkBox('use_vrscene', e=True, en=True)
+                cmds.checkBox('use_standalone', e=True, en=True)
                 cmds.checkBox('distributed', e=True, en=True)
             else:
                 cmds.checkBox('vray_nightly', e=True, en=False)
-                cmds.checkBox('use_vrscene', e=True, en=False)
                 cmds.checkBox('distributed', e=True, en=False)
             if eval_ui('renderer', type='optionMenu', v=True) in ("mr", "Mental Ray") and not self.force_mi:
-                cmds.checkBox('use_mi', e=True, en=True)
+                cmds.checkBox('use_standalone', e=True, en=True)
             else:
-                cmds.checkBox('use_mi', e=True, en=False)
+                cmds.checkBox('use_standalone', e=True, en=False)
             cmds.textField('frange', e=True, en=True)
             cmds.textField('frame_step', e=True, en=True)
             cmds.textField('chunk_size', e=True, en=True)
@@ -607,28 +614,79 @@ class SubmitWindow(object):
 
     def distributed_toggle( self, checked ):
         if checked:
-            cmds.checkBox('use_vrscene', e=True, en=False)
+            cmds.checkBox('use_standalone', e=True, en=False)
         else:
-            cmds.checkBox('use_vrscene', e=True, en=True)
+            cmds.checkBox('use_standalone', e=True, en=True)
 
     def change_renderer( self, renderer ):
-        if renderer in ("vray", "V-Ray"):
+        renderer_seen = False
+        renderer_key = None
+        if renderer in ('vray', 'V-Ray'):
+            renderer_seen = True
+            renderer_key = 'vray'
             cmds.checkBox('vray_nightly', e=True, en=True)
-            cmds.checkBox('use_vrscene', e=True, en=True)
+            cmds.checkBox('use_standalone', e=True, en=True)
             cmds.checkBox('distributed', e=True, en=True)
+            cmds.checkBox('use_standalone', e=True, v=False)
+            cmds.checkBox('use_standalone', e=True, label='Use Vray Standalone')
         else:
             cmds.checkBox('vray_nightly', e=True, en=False)
-            cmds.checkBox('use_vrscene', e=True, en=False)
             cmds.checkBox('distributed', e=True, en=False)
-        if renderer in ("mr", "Mental Ray"):
+        if renderer in ('mr', 'Mental Ray'):
+            renderer_seen = True
+            renderer_key = 'mr'
             if self.force_mi:
-                cmds.checkBox('use_mi', e=True, en=False)
+                cmds.checkBox('use_standalone', e=True, en=False)
             else:
-                cmds.checkBox('use_mi', e=True, en=True)
-            cmds.checkBox('use_mi', e=True, v=True)
+                cmds.checkBox('use_standalone', e=True, en=True)
+            cmds.checkBox('use_standalone', e=True, v=True)
+            cmds.checkBox('use_standalone', e=True, label='Use Mental Ray Standalone')
+        if renderer in ('arnold', 'Arnold'):
+            renderer_seen = True
+            renderer_key = 'arnold'
+            cmds.checkBox('use_standalone', e=True, en=False)
+            cmds.checkBox('use_standalone', e=True, v=False)
+            cmds.checkBox('use_standalone', e=True, label='Use Arnold Standalone')
+        # for any unknown renderer, disable standalone
+        if renderer_seen == False:
+            cmds.checkBox('use_standalone', e=True, en=False)
+            cmds.checkBox('use_standalone', e=True, v=False)
+            cmds.checkBox('use_standalone', e=True, label='Use Standalone')
+        #
+        #   job_types dropdown - remove all items for list, then allow in job types
+        #   from ZYNC.JOB_SUBTYPES
+        #
+        old_types = cmds.optionMenu('job_type', q=True, ill=True)
+        if old_types != None:
+            cmds.deleteUI(old_types)
+        first_type = None
+        if renderer_key != None and renderer_key in self.job_types:
+            for job_type in self.job_types[renderer_key]:
+                if first_type == None:
+                    first_type = job_type
+                print cmds.menuItem(parent='job_type', label=string.capwords(job_type))
         else:
-            cmds.checkBox('use_mi', e=True, en=False)
-            cmds.checkBox('use_mi', e=True, v=False)
+            print cmds.menuItem(parent='job_type', label='Render')
+            first_type = 'Render'
+        self.change_job_type(first_type)
+
+    def change_job_type(self, job_type):
+        job_type = job_type.lower()
+        if job_type == 'render':
+            # clear the render layers list
+            cmds.textScrollList('layers', e=True, removeAll=True)
+            cmds.textScrollList('layers', e=True, append=self.layers)
+            cmds.text('layers_label', e=True, label='Render Layers:')
+            cmds.textField('frange', e=True, tx=self.frange)
+            cmds.text('frange_label', e=True, label='Frame Range:')
+        elif job_type == 'bake':
+            cmds.textScrollList('layers', e=True, removeAll=True)
+            cmds.textScrollList('layers', e=True, append=self.bake_sets)
+            cmds.text('layers_label', e=True, label='Bake Sets:')
+            cmds.textField('frange', e=True, tx=self.udim_range)
+            cmds.text('frange_label', e=True, label='UDIM Range:')
+        else:
+            cmds.error('Unknown Job Type "%s".' % (job_type,))
 
     def select_new_project(self, selected):
         if selected:
@@ -654,10 +712,29 @@ class SubmitWindow(object):
         #        raise Exception(msg)
         pass
 
+    def get_bake_set_uvs(self, bake_set):
+        conn_list = cmds.listConnections(bake_set)
+        if conn_list == None or len(conn_list) == 0:
+            return None
+        return cmds.polyEvaluate(conn_list[0], b2=True)
+
+    def get_bake_set_map(self, bake_set):
+        return cmds.getAttr('%s.bakeChannel' % (bake_set,))
+
+    def get_bake_set_shape(self, bake_set):
+        transforms = cmds.listConnections(bake_set)
+        if transforms == None or len(transforms) == 0:
+            return None
+        transform = transforms[0]
+        shape_nodes = cmds.listRelatives(transform)
+        if shape_nodes == None or len(shape_nodes) == 0:
+            return None
+        return shape_nodes[0]
+
     def get_render_params(self):
         """
         Returns a dict of all the render parameters set on the UI
-       """
+        """
         params = dict()
 
         if cmds.radioButton('existing_project', q=True, sl=True) == True:
@@ -687,6 +764,8 @@ class SubmitWindow(object):
         else:
             params['renderer'] = zync.MAYA_DEFAULT_RENDERER
 
+        params['job_subtype'] = eval_ui('job_type', type='optionMenu', v=True).lower()
+
         params['priority'] = int(eval_ui('priority', text=True))
         params['num_instances'] = int(eval_ui('num_instances', text=True))
 
@@ -707,19 +786,39 @@ class SubmitWindow(object):
 
         if params['upload_only'] == 0 and params['renderer'] == 'vray':
             params['vray_nightly'] = int(eval_ui('vray_nightly', 'checkBox', v=True))
-            params['use_vrscene'] = int(eval_ui('use_vrscene', 'checkBox', v=True))
+            params['use_vrscene'] = int(eval_ui('use_standalone', 'checkBox', v=True))
             params['distributed'] = int(eval_ui('distributed', 'checkBox', v=True))
             params['use_mi'] = 0
         elif params['upload_only'] == 0 and params['renderer'] == 'mr':
             params['vray_nightly'] = 0
             params['use_vrscene'] = 0
             params['distributed'] = 0
-            params['use_mi'] = int(eval_ui('use_mi', 'checkBox', v=True))
+            params['use_mi'] = int(eval_ui('use_standalone', 'checkBox', v=True))
         else:
             params['vray_nightly'] = 0
             params['use_vrscene'] = 0
             params['distributed'] = 0
             params['use_mi'] = 0
+
+        if params['upload_only'] == 1:
+            params['layers'] = None
+            params['bake_sets'] = None
+        elif params['job_subtype'] == 'bake':
+            bake_sets = eval_ui('layers', 'textScrollList', ai=True, si=True)
+            if not bake_sets:
+                msg = 'Please select bake set(s).'
+                raise MayaZyncException(msg)
+            bake_sets = ','.join(bake_sets)
+            params['bake_sets'] = bake_sets
+            params['layers'] = None
+        else:
+            layers = eval_ui('layers', 'textScrollList', ai=True, si=True)
+            if not layers:
+                msg = 'Please select layer(s) to render.'
+                raise MayaZyncException(msg)
+            layers = ','.join(layers)
+            params['layers'] = layers
+            params['bake_sets'] = None
 
         return params
 
@@ -728,22 +827,28 @@ class SubmitWindow(object):
         Displays the window.
         """
         cmds.showWindow(self.name)
-
-    def init_layers(self):
-        self.layers = []
-        try:
-            all_layers = cmds.ls(type='renderLayer',showNamespace=True)
-            for i in range( 0, len(all_layers), 2 ):
-                if all_layers[i+1] == ':':
-                    self.layers.append( all_layers[i] )
-        except Exception:
-            self.layers = cmds.ls(type='renderLayer')
+ 
+    def init_bake(self):
+        self.bake_sets = (bake_set for bake_set in cmds.ls(type='VRayBakeOptions') \
+            if bake_set != 'vrayDefaultBakeOptions')
+        self.bake_sets = list(self.bake_sets)
+        self.bake_sets.sort()
 
     #
     #   These init_* functions get run automatcially when the UI file is loaded.
     #   The function names must match the name of the UI element e.g. init_camera()
     #   will be run when the "camera" UI element is initialized.
     #
+
+    def init_layers(self):
+        self.layers = []
+        try:
+            all_layers = cmds.ls(type='renderLayer', showNamespace=True)
+            for i in range( 0, len(all_layers), 2 ):
+                if all_layers[i+1] == ':':
+                    self.layers.append( all_layers[i] )
+        except Exception:
+            self.layers = cmds.ls(type='renderLayer')
 
     def init_existing_project_name(self):
         project_response = ZYNC.get_project_list()
@@ -757,6 +862,10 @@ class SubmitWindow(object):
                 project_found = True
         if project_found:
             cmds.optionMenu('existing_project_name', e=True, v=self.new_project_name)
+        if len(self.projects) == 0:
+            cmds.radioButton('existing_project', e=True, en=False)
+        else:
+            cmds.radioButton('existing_project', e=True, en=True)
 
     def init_instance_type(self):
         non_default = []
@@ -808,6 +917,9 @@ class SubmitWindow(object):
         if rend_found:
             cmds.optionMenu('renderer', e=True, v=default_renderer_name)
 
+    def init_job_type(self):
+        self.job_types = ZYNC.JOB_SUBTYPES['maya']
+
     def init_camera(self):
         cam_parents = [cmds.listRelatives(x, ap=True)[-1] for x in cmds.ls(cameras=True)]
         for cam in cam_parents:
@@ -826,9 +938,17 @@ class SubmitWindow(object):
         layers = [x for x in cmds.ls(type='renderLayer') \
                        if x != 'defaultRenderLayer' and not ':' in x]
 
-        selected_layers = eval_ui('layers', 'textScrollList', ai=True, si=True)
-        if selected_layers == None:
+        subtype = eval_ui('job_type', type='optionMenu', v=True).lower()
+        if subtype == 'bake':
+            selected_bake_sets = eval_ui('layers', 'textScrollList', ai=True, si=True)
+            if selected_bake_sets == None:
+                selected_bake_sets = []
             selected_layers = []
+        else:
+            selected_layers = eval_ui('layers', 'textScrollList', ai=True, si=True)
+            if selected_layers == None:
+                selected_layers = []
+            selected_bake_sets = []
 
         #
         #   Detect a list of referenced files. We must use ls() instead of file(q=True, r=True)
@@ -892,17 +1012,24 @@ class SubmitWindow(object):
             if layer_prefix != None:
                 layer_prefixes[layer] = layer_prefix
 
-        if renderer == "vray":
+        bake_set_info = dict()
+        for bake_set in selected_bake_sets:
+            bake_set_info[bake_set] = {}
+            bake_set_info[bake_set]['uvs'] = self.get_bake_set_uvs(bake_set)
+            bake_set_info[bake_set]['map'] = self.get_bake_set_map(bake_set)
+            bake_set_info[bake_set]['shape'] = self.get_bake_set_shape(bake_set)
+
+        if renderer == 'vray':
             extension = cmds.getAttr('vraySettings.imageFormatStr')
             if extension == None:
                 extension = 'png'
             padding = int(cmds.getAttr('vraySettings.fileNamePadding'))
-        elif renderer in ("sw", "mr"):
+        elif renderer == 'mr':
             extension = cmds.getAttr('defaultRenderGlobals.imfPluginKey')
             if not extension:
                 extension = get_default_extension(renderer)
             padding = int(cmds.getAttr('defaultRenderGlobals.extensionPadding'))
-        elif renderer == "arnold":
+        elif renderer == 'arnold':
             extension = cmds.getAttr('defaultRenderGlobals.imfPluginKey')
             padding = int(cmds.getAttr('defaultRenderGlobals.extensionPadding'))
         global_prefix = get_layer_override('defaultRenderLayer', renderer, 'prefix')
@@ -968,7 +1095,8 @@ class SubmitWindow(object):
                       'plugins': plugins,
                       'version': version,
                       'arnold_version': arnold_version,
-                      'vray_version': vray_version}
+                      'vray_version': vray_version,
+                      'bake_sets': bake_set_info}
         return scene_info
 
     @staticmethod
@@ -989,8 +1117,6 @@ class SubmitWindow(object):
         """
         Submits to zync
         """
-        params = window.get_render_params()
-
         scene_path = cmds.file(q=True, loc=True)
         # Comment out the line above and uncomment this section if you want to
         # save a unique copy of the scene file each time your submit a job.
@@ -1004,14 +1130,10 @@ class SubmitWindow(object):
         cmds.file( modified=original_modified )
         '''
 
-        if params["upload_only"] == 1:
-            layers = None
-        else:
-            layers = eval_ui('layers', 'textScrollList', ai=True, si=True)
-            if not layers:
-                msg = 'Please select layer(s) to render.'
-                raise MayaZyncException(msg)
-            layers = ','.join(layers)
+        params = window.get_render_params()
+
+        scene_info = window.get_scene_info(params['renderer'])
+        params['scene_info'] = scene_info
 
         username = eval_ui('username', text=True)
         password = eval_ui('password', text=True)
@@ -1025,11 +1147,8 @@ class SubmitWindow(object):
             msg = 'ZYNC Username Authentication Failed'
             raise MayaZyncException(msg)
 
-        scene_info = window.get_scene_info(params['renderer'])
-        params['scene_info'] = scene_info
-
         try:
-            ZYNC.submit_job("maya", scene_path, layers, params=params)
+            ZYNC.submit_job("maya", scene_path, params=params)
             cmds.confirmDialog(title='Success',
                                message='Job submitted to ZYNC.',
                                button='OK',
