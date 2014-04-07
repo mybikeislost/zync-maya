@@ -318,6 +318,10 @@ def _aiImage_handler(node):
 def _aiPhotometricLight_handler(node):
     """Handles aiPhotometricLight nodes"""
     yield (cmds.getAttr('%s.aiFilename' % (node,)),)
+
+def _exocortex_handler(node):
+    """Handles Exocortex Alembic nodes"""
+    yield (cmds.getAttr('%s.fileName' % (node,)),)
     
 def get_scene_files():
     """Returns all of the files being used by the scene"""
@@ -341,7 +345,8 @@ def get_scene_files():
                   'dynGlobals': _dynGlobals_handler,
                   'aiStandIn': _aiStandIn_handler,
                   'aiImage': _aiImage_handler,
-                  'aiPhotometricLight': _aiPhotometricLight_handler}
+                  'aiPhotometricLight': _aiPhotometricLight_handler,
+                  'ExocortexAlembicFile': _exocortex_handler}
 
     for file_type in file_types:
         handler = file_types.get(file_type)
