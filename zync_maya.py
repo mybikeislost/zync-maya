@@ -318,7 +318,7 @@ def _aiImage_handler(node):
 def _aiPhotometricLight_handler(node):
     """Handles aiPhotometricLight nodes"""
     yield (cmds.getAttr('%s.aiFilename' % (node,)),)
-
+ 
 def _exocortex_handler(node):
     """Handles Exocortex Alembic nodes"""
     yield (cmds.getAttr('%s.fileName' % (node,)),)
@@ -559,12 +559,13 @@ class SubmitWindow(object):
         #
         #   Callbacks - set up functions to be called as UI elements are modified.
         #
+        cmds.radioButton('existing_project', e=True, onCommand=self.select_existing_project)
+        cmds.radioButton('new_project', e=True, onCommand=self.select_new_project)
         cmds.checkBox('upload_only', e=True, changeCommand=self.upload_only_toggle)
-        cmds.checkBox('distributed', e=True, changeCommand=self.distributed_toggle)
         cmds.optionMenu('renderer', e=True, changeCommand=self.change_renderer)
         cmds.optionMenu('job_type', e=True, changeCommand=self.change_job_type)
-        cmds.radioButton('new_project', e=True, onCommand=self.select_new_project)
-        cmds.radioButton('existing_project', e=True, onCommand=self.select_existing_project)
+        cmds.checkBox('distributed', e=True, changeCommand=self.distributed_toggle)
+        cmds.textScrollList('layers', e=True, selectCommand=self.change_layers)
         #
         #   Call a few of those callbacks now to set initial UI state.
         #
@@ -649,9 +650,9 @@ class SubmitWindow(object):
         if renderer in ('arnold', 'Arnold'):
             renderer_seen = True
             renderer_key = 'arnold'
-            cmds.checkBox('use_standalone', e=True, en=False)
+            cmds.checkBox('use_standalone', e=True, en=True)
             cmds.checkBox('use_standalone', e=True, v=False)
-            cmds.checkBox('use_standalone', e=True, label='Use Arnold Standalone')
+            cmds.checkBox('use_standalone', e=True, label='Use Arnold Standalone (BETA)')
         # for any unknown renderer, disable standalone
         if renderer_seen == False:
             cmds.checkBox('use_standalone', e=True, en=False)
@@ -678,20 +679,45 @@ class SubmitWindow(object):
     def change_job_type(self, job_type):
         job_type = job_type.lower()
         if job_type == 'render':
-            # clear the render layers list
+            cmds.textField('output_dir', e=True, en=True)
+            cmds.text('frange_label', e=True, label='Frame Range:')
+            cmds.textField('frange', e=True, tx=self.frange)
+            cmds.optionMenu('camera', e=True, en=True)
+            cmds.text('layers_label', e=True, label='Render Layers:')
             cmds.textScrollList('layers', e=True, removeAll=True)
             cmds.textScrollList('layers', e=True, append=self.layers)
-            cmds.text('layers_label', e=True, label='Render Layers:')
-            cmds.textField('frange', e=True, tx=self.frange)
-            cmds.text('frange_label', e=True, label='Frame Range:')
+            cmds.textField('x_res', e=True, tx=self.x_res)
+            cmds.textField('y_res', e=True, tx=self.y_res)
         elif job_type == 'bake':
+            cmds.textField('output_dir', e=True, en=False)
+            cmds.text('frange_label', e=True, label='UDIM Range:')
+            cmds.textField('frange', e=True, tx=self.udim_range)
+            cmds.optionMenu('camera', e=True, en=False)
+            cmds.text('layers_label', e=True, label='Bake Sets:')
             cmds.textScrollList('layers', e=True, removeAll=True)
             cmds.textScrollList('layers', e=True, append=self.bake_sets)
-            cmds.text('layers_label', e=True, label='Bake Sets:')
-            cmds.textField('frange', e=True, tx=self.udim_range)
-            cmds.text('frange_label', e=True, label='UDIM Range:')
+            try:
+                default_x_res = str(cmds.getAttr('vrayDefaultBakeOptions.resolutionX'))
+            except:
+                default_x_res = ''
+            cmds.textField('x_res', e=True, tx=default_x_res)
+            try:
+                default_y_res = str(cmds.getAttr('vrayDefaultBakeOptions.resolutionY'))
+            except:
+                default_y_res = ''
+            cmds.textField('y_res', e=True, tx=default_y_res)
         else:
             cmds.error('Unknown Job Type "%s".' % (job_type,))
+
+    def change_layers(self):
+        if cmds.optionMenu('job_type', q=True, v=True).lower() != 'bake':
+            return
+        if cmds.textScrollList('layers', q=True, nsi=True) > 1:
+            return
+        bake_sets = eval_ui('layers', 'textScrollList', ai=True, si=True)
+        bake_set = bake_sets[0]
+        cmds.textField('x_res', e=True, tx=cmds.getAttr('%s.resolutionX' % (bake_set,)))
+        cmds.textField('y_res', e=True, tx=cmds.getAttr('%s.resolutionY' % (bake_set,)))
 
     def select_new_project(self, selected):
         if selected:
@@ -735,6 +761,18 @@ class SubmitWindow(object):
         if shape_nodes == None or len(shape_nodes) == 0:
             return None
         return shape_nodes[0]
+
+    def get_bake_set_output_path(self, bake_set):
+        out_path = cmds.getAttr('%s.outputTexturePath' % (bake_set,))
+        out_path = out_path.replace('\\', '/')
+        if out_path[0] == '/' or out_path[1] == ':':
+            full_path = out_path
+        else:
+            full_path = proj_dir().replace('\\', '/')
+            if full_path[-1] != '/':
+                full_path += '/'
+            full_path += out_path
+        return full_path
 
     def get_render_params(self):
         """
@@ -791,14 +829,30 @@ class SubmitWindow(object):
 
         if params['upload_only'] == 0 and params['renderer'] == 'vray':
             params['vray_nightly'] = int(eval_ui('vray_nightly', 'checkBox', v=True))
+            if params['vray_nightly'] == 1:
+                vray_version = str(cmds.pluginInfo('vrayformaya', query=True, version=True))
+                if vray_version.startswith('3.0'):
+                    cmds.error('Nightly Builds are not currently support for Vray 3.0.')
             params['use_vrscene'] = int(eval_ui('use_standalone', 'checkBox', v=True))
+            if params['use_vrscene'] == 1 and params['job_subtype'] == 'bake':
+                cmds.error('Vray Standalone is not currently supported for Bake jobs.')
             params['distributed'] = int(eval_ui('distributed', 'checkBox', v=True))
+            if params['distributed'] == 1 and params['job_subtype'] == 'bake':
+                cmds.error('Distributed Rendering is not currently supported for Bake jobs.')
             params['use_mi'] = 0
+            params['use_ass'] = 0
         elif params['upload_only'] == 0 and params['renderer'] == 'mr':
             params['vray_nightly'] = 0
             params['use_vrscene'] = 0
             params['distributed'] = 0
             params['use_mi'] = int(eval_ui('use_standalone', 'checkBox', v=True))
+            params['use_ass'] = 0
+        elif params['upload_only'] == 0 and params['renderer'] == 'arnold':
+            params['vray_nightly'] = 0
+            params['use_vrscene'] = 0
+            params['distributed'] = 0
+            params['use_mi'] = 0
+            params['use_ass'] = int(eval_ui('use_standalone', 'checkBox', v=True))
         else:
             params['vray_nightly'] = 0
             params['use_vrscene'] = 0
@@ -1023,6 +1077,7 @@ class SubmitWindow(object):
             bake_set_info[bake_set]['uvs'] = self.get_bake_set_uvs(bake_set)
             bake_set_info[bake_set]['map'] = self.get_bake_set_map(bake_set)
             bake_set_info[bake_set]['shape'] = self.get_bake_set_shape(bake_set)
+            bake_set_info[bake_set]['output_path'] = self.get_bake_set_output_path(bake_set)
 
         if renderer == 'vray':
             extension = cmds.getAttr('vraySettings.imageFormatStr')
