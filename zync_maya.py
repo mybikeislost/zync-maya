@@ -39,7 +39,7 @@ for key in required_config:
 
 sys.path.append(API_DIR)
 import zync
-ZYNC = zync.Zync('maya_plugin', API_KEY)
+ZYNC = zync.Zync('maya_plugin', API_KEY, application='maya')
 
 UI_FILE = '%s/resources/submit_dialog.ui' % (os.path.dirname(__file__),)
 
@@ -583,6 +583,7 @@ class SubmitWindow(object):
             cmds.checkBox('distributed', e=True, en=False)
             cmds.textField('output_dir', e=True, en=False)
             cmds.optionMenu('renderer', e=True, en=False)
+            cmds.optionMenu('job_type', e=True, en=False)
             cmds.checkBox('vray_nightly', e=True, en=False)
             cmds.checkBox('use_standalone', e=True, en=False)
             cmds.textField('frange', e=True, en=False)
@@ -610,6 +611,7 @@ class SubmitWindow(object):
                 cmds.checkBox('use_standalone', e=True, en=True)
             else:
                 cmds.checkBox('use_standalone', e=True, en=False)
+            cmds.optionMenu('job_type', e=True, en=True)
             cmds.textField('frange', e=True, en=True)
             cmds.textField('frame_step', e=True, en=True)
             cmds.textField('chunk_size', e=True, en=True)
