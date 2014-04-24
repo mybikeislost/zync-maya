@@ -817,7 +817,7 @@ class SubmitWindow(object):
         selected_type = eval_ui('instance_type', 'optionMenu', v=True)
         for inst_type in ZYNC.INSTANCE_TYPES:
             if selected_type.split(' ')[0] == inst_type:
-                params['instance_type'] = ZYNC.INSTANCE_TYPES[inst_type]['csp_label']
+                params['instance_type'] = inst_type
                 break
         else:
             params['instance_type'] = zync.DEFAULT_INSTANCE_TYPE
@@ -834,7 +834,7 @@ class SubmitWindow(object):
             if params['vray_nightly'] == 1:
                 vray_version = str(cmds.pluginInfo('vrayformaya', query=True, version=True))
                 if vray_version.startswith('3.0'):
-                    cmds.error('Nightly Builds are not currently support for Vray 3.0.')
+                    cmds.error('Nightly Builds are not currently supported for Vray 3.0.')
             params['use_vrscene'] = int(eval_ui('use_standalone', 'checkBox', v=True))
             if params['use_vrscene'] == 1 and params['job_subtype'] == 'bake':
                 cmds.error('Vray Standalone is not currently supported for Bake jobs.')
@@ -1028,14 +1028,10 @@ class SubmitWindow(object):
                 pass
 
         render_passes = {}
-        multiple_folders = False
-        element_separator = "."
-        if renderer == "vray" and cmds.getAttr('vraySettings.imageFormatStr') != 'exr (multichannel)':
+        if renderer == 'vray' and cmds.getAttr('vraySettings.imageFormatStr') != 'exr (multichannel)':
             pass_list = cmds.ls(type='VRayRenderElement')
             pass_list += cmds.ls(type='VRayRenderElementSet')
             if len(pass_list) > 0:
-                multiple_folders = True if cmds.getAttr('vraySettings.relements_separateFolders') == 1 else False
-                element_separator = cmds.getAttr('vraySettings.fnes')
                 for layer in selected_layers:
                     render_passes[layer] = []
                     enabled_passes = get_layer_override(layer, renderer, 'render_passes')
@@ -1061,10 +1057,10 @@ class SubmitWindow(object):
                                 continue
                             # special case for Material Select elements - these are named based on the material
                             # they are connected to.
-                            if "vray_mtl_mtlselect" in cmds.listAttr( r_pass ):
-                                connections = cmds.listConnections( "%s.vray_mtl_mtlselect" % ( r_pass, ) )
+                            if 'vray_mtl_mtlselect' in cmds.listAttr(r_pass):
+                                connections = cmds.listConnections('%s.vray_mtl_mtlselect' % (r_pass,))
                                 if connections:
-                                    final_name += "_%s" % ( str(connections[0]), )
+                                    final_name += '_%s' % (str(connections[0]),)
                             render_passes[layer].append(final_name)
 
         layer_prefixes = dict()
@@ -1147,8 +1143,6 @@ class SubmitWindow(object):
         scene_info = {'files': files,
                       'render_layers': self.layers,
                       'render_passes': render_passes,
-                      'multiple_folders': multiple_folders,
-                      'element_separator': element_separator,
                       'references': references,
                       'unresolved_references': unresolved_references,
                       'file_prefix': file_prefix,
@@ -1210,7 +1204,7 @@ class SubmitWindow(object):
             raise MayaZyncException(msg)
 
         try:
-            ZYNC.submit_job("maya", scene_path, params=params)
+            ZYNC.submit_job('maya', scene_path, params=params)
             cmds.confirmDialog(title='Success',
                                message='Job submitted to ZYNC.',
                                button='OK',

@@ -1148,6 +1148,39 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>scrollArea</tabstop>
+  <tabstop>existing_project</tabstop>
+  <tabstop>existing_project_name</tabstop>
+  <tabstop>new_project</tabstop>
+  <tabstop>new_project_name</tabstop>
+  <tabstop>parent_id</tabstop>
+  <tabstop>priority</tabstop>
+  <tabstop>num_instances</tabstop>
+  <tabstop>instance_type</tabstop>
+  <tabstop>upload_only</tabstop>
+  <tabstop>start_new_slots</tabstop>
+  <tabstop>skip_check</tabstop>
+  <tabstop>notify_complete</tabstop>
+  <tabstop>ignore_plugin_errors</tabstop>
+  <tabstop>project</tabstop>
+  <tabstop>output_dir</tabstop>
+  <tabstop>renderer</tabstop>
+  <tabstop>job_type</tabstop>
+  <tabstop>vray_nightly</tabstop>
+  <tabstop>use_standalone</tabstop>
+  <tabstop>distributed</tabstop>
+  <tabstop>frange</tabstop>
+  <tabstop>frame_step</tabstop>
+  <tabstop>chunk_size</tabstop>
+  <tabstop>camera</tabstop>
+  <tabstop>layers</tabstop>
+  <tabstop>x_res</tabstop>
+  <tabstop>y_res</tabstop>
+  <tabstop>username</tabstop>
+  <tabstop>password</tabstop>
+  <tabstop>submit_button</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
