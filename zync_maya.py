@@ -395,7 +395,7 @@ def collect_layer_info(layer, renderer):
     if renderer == 'vray':
         node = 'vraySettings'
         attribute = 'fileNamePrefix'
-    elif renderer in ("sw", "mr"):
+    elif renderer in ('sw', 'mr', 'arnold'):
         node = 'defaultRenderGlobals'
         attribute = 'imageFilePrefix'
     try:
